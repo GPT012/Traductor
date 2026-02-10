@@ -79,23 +79,20 @@
       animation: tr-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
       
       /* HYPER-REALISTIC MATERIAL: White Matte Ceramic / Frosted Glass */
-      /* HYPER-REALISTIC MATERIAL: White Matte Ceramic / Frosted Glass */
       background: var(--tr-orb-bg, radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%)) !important;
-      
-      /* COMPLEX LIGHTING & SHADOWS */
       
       /* COMPLEX LIGHTING & SHADOWS */
       /* 1. Top-left highlight (Specularity) */
       /* 2. Soft form shadow (Volume) */
       /* 3. Bounce light from bottom (Environment) */
       /* 4. Drop shadow (Distance from page) */
-      box-shadow: 
+      box-shadow: var(--tr-orb-shadow, 
         inset 2px 2px 5px rgba(255, 255, 255, 1),      /* Highlight top-left */
         inset -5px -5px 15px rgba(148, 163, 184, 0.3), /* Deep shadow bottom-right */
         0 15px 35px -10px rgba(15, 23, 42, 0.2),       /* Main drop shadow */
-        0 5px 15px -5px rgba(15, 23, 42, 0.1) !important;
+        0 5px 15px -5px rgba(15, 23, 42, 0.1)) !important;
       
-      border: 1px solid rgba(255, 255, 255, 0.4) !important; /* Subtle rim */
+      border: var(--tr-orb-border, 1px solid rgba(255, 255, 255, 0.4)) !important; /* Subtle rim */
     }
 
     #tr-badge:hover { 
@@ -217,12 +214,20 @@
   function updateTheme(theme) {
     if (!badge) return;
     if (theme === 'dark') {
-      badge.style.setProperty('--tr-orb-bg', 'radial-gradient(120% 120% at 30% 30%, #1e293b 0%, #0f172a 100%)');
+      // Clean Dark Mode - No Glare/Shadows
+      badge.style.setProperty('--tr-orb-bg', '#131215'); // User requested flat color
+      badge.style.setProperty('--tr-orb-shadow', 'none');
+      badge.style.setProperty('--tr-orb-border', 'none');
+
       // Dark mode icon color
       const icon = document.getElementById('tr-icon');
       if (icon) icon.style.color = '#e2e8f0';
     } else {
-      badge.style.setProperty('--tr-orb-bg', 'radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%)');
+      // Restore Light Mode
+      badge.style.removeProperty('--tr-orb-bg');
+      badge.style.removeProperty('--tr-orb-shadow');
+      badge.style.removeProperty('--tr-orb-border');
+
       const icon = document.getElementById('tr-icon');
       if (icon) icon.style.color = '#94a3b8';
     }
