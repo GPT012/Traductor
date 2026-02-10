@@ -1,12 +1,14 @@
 {
     "manifest_version": 3,
-    "name": "Auto Translator",
+    "name": "ConFluent",
     "version": "2.0.0",
     "description": "Traduit automatiquement ce que vous tapez - 100% GRATUIT",
     "permissions": [
         "storage",
         "activeTab",
-        "scripting"
+        "scripting",
+        "clipboardRead",
+        "clipboardWrite"
     ],
     "host_permissions": [
         "https://translate.googleapis.com/*",

@@ -1,0 +1,342 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap');
+
+:root {
+    /* FLUID/CERAMIC THEME */
+    --bg: #f8fafc;
+    /* Slate 50 */
+    --surface: #ffffff;
+    /* White */
+    --text: #0f172a;
+    /* Slate 900 */
+    --text-muted: #64748b;
+    /* Slate 500 */
+
+    --primary: #3b82f6;
+    /* Blue 500 */
+    --accent: #10b981;
+    /* Emerald 500 (Active) */
+    --border: #e2e8f0;
+    /* Slate 200 */
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.5);
+    /* Blue Glow */
+}
+
+/* GLASS ICON STYLE */
+.glass-icon {
+    width: 16px;
+    height: 16px;
+    /* Glass Effect */
+    fill: rgba(59, 130, 246, 0.1);
+    /* Subtle blue tint fill */
+    stroke: #475569;
+    /* Slate 600 stroke */
+    stroke-width: 1.5;
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+    /* Highlight */
+}
+
+/* Specific variants if needed */
+.glass-icon.active {
+    fill: rgba(16, 185, 129, 0.15);
+    stroke: #059669;
+}
+
+body {
+    width: 280px;
+    background-color: var(--bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    /* Prevent scrollbars */
+}
+
+.container {
+    padding: 16px 20px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* === HEADER & LOGO === */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ORB CONTAINER */
+.logo-container {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #f1f5f9);
+    box-shadow:
+        inset -2px -2px 5px rgba(148, 163, 184, 0.2),
+        /* Shadow */
+        inset 2px 2px 5px rgba(255, 255, 255, 1),
+        /* Highlight */
+        0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* Drop */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fluent-icon {
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+    transition: color 0.3s ease;
+}
+
+.brand-name {
+    font-family: 'Clash Display', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    color: var(--text);
+}
+
+/* ACTIVE STATE FOR LOGO */
+.logo-container.active {
+    box-shadow:
+        inset -2px -2px 5px rgba(148, 163, 184, 0.2),
+        inset 2px 2px 5px rgba(255, 255, 255, 1),
+        0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.logo-container.active .fluent-icon {
+    color: var(--primary);
+}
+
+/* CONNECTION DOT */
+.status-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid white;
+    transition: all 0.3s ease;
+    opacity: 0;
+    /* Hidden by default in this design, or subtle */
+}
+
+.status-dot.active {
+    background: var(--accent);
+    opacity: 1;
+    box-shadow: 0 0 5px var(--accent);
+}
+
+/* === CARDS === */
+.card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    /* Increased padding */
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Smoother gap */
+    border: 1px solid white;
+}
+
+.conversation-card {
+    gap: 16px;
+    transition: all 0.3s ease;
+}
+
+/* === FORM ELEMENTS === */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Clash Display', sans-serif;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title .icon {
+    font-size: 14px;
+}
+
+label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+select {
+    width: 100%;
+    appearance: none;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+select:hover {
+    background: #e2e8f0;
+}
+
+select:focus {
+    outline: none;
+    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.select-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-muted);
+}
+
+/* === TOGGLE SWITCH (iOS Style) === */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch.small {
+    width: 36px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e2e8f0;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.switch.small .slider:before {
+    height: 16px;
+    width: 16px;
+}
+
+input:checked+.slider {
+    background-color: var(--primary);
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+}
+
+.switch.small input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+/* === TOAST === */
+#status {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    /* Black/Slate 900 */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#status.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Animation Utilities */
+@keyframes pulse-subtle {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

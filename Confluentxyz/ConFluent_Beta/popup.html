@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- HEADER: Logo & Power Toggle -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo-container" id="logo-container">
+          <svg class="fluent-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M14.5 7.5C15.8807 7.5 17 8.61929 17 10C17 11.3807 15.8807 12.5 14.5 12.5C13.1193 12.5 12 11.3807 12 10C12 8.61929 13.1193 7.5 14.5 7.5ZM9.5 7.5C10.8807 7.5 12 8.61929 12 10C12 11.3807 10.8807 12.5 9.5 12.5C8.11929 12.5 7 11.3807 7 10C7 8.61929 8.11929 7.5 9.5 7.5ZM14.5 5.5C12.756 5.5 11.129 6.275 10 7.545C8.871 6.275 7.244 5.5 5.5 5.5C2.462 5.5 0 7.962 0 11C0 14.038 2.462 16.5 5.5 16.5C7.244 16.5 8.871 15.725 10 14.455C11.129 15.725 12.756 16.5 14.5 16.5C17.538 16.5 20 14.038 20 11C20 7.962 17.538 5.5 14.5 5.5Z" />
+          </svg>
+          <div id="connection-dot" class="status-dot"></div>
+        </div>
+        <span class="brand-name">ConFluent</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="enabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- SETTINGS CARD -->
+    <div class="card">
+
+      <!-- Target Language -->
+      <div class="section">
+        <label>Translate to</label>
+        <div class="select-wrapper">
+          <select id="targetLang">
+            <option value="en">English (US)</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="ar">العربية</option>
+          </select>
+          <svg class="select-icon" width="10" height="6" viewBox="0 0 10 6" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Trigger Mode -->
+      <div class="section">
+        <label>Trigger</label>
+        <div class="select-wrapper">
+          <select id="triggerMode">
+            <option value="timer">Standard (Timer)</option>
+            <option value="rapid">⚡ Rapid (Instant)</option>
+            <option value="pro">📧 Pro (Sentence End)</option>
+          </select>
+          <svg class="select-icon" width="10" height="6" viewBox="0 0 10 6" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Delay (Hidden by default) -->
+      <div class="section" id="delay-container">
+        <label>Typing Delay</label>
+        <div class="select-wrapper">
+          <select id="delay">
+            <option value="500">Fast (0.5s)</option>
+            <option value="1000">Normal (1s)</option>
+            <option value="1500">Relaxed (1.5s)</option>
+            <option value="2000">Safe (2s)</option>
+          </select>
+          <svg class="select-icon" width="10" height="6" viewBox="0 0 10 6" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONVERSATION CARD -->
+    <div class="card conversation-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon">🗣️</span>
+          <span>Conversation</span>
+        </div>
+        <label class="switch small">
+          <input type="checkbox" id="conversationMode">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="section" id="myLang-container" style="display: none;">
+        <label>I read in</label>
+        <div class="select-wrapper">
+          <select id="myLang">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="ar">العربية</option>
+          </select>
+          <svg class="select-icon" width="10" height="6" viewBox="0 0 10 6" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="status">Saved</div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,4 @@
-// popup.js - Configuration v27.6 (Conversational Mode)
-
+// popup.js - Configuration v28.0 (White Orb Design)
 document.addEventListener('DOMContentLoaded', () => {
     const elEnabled = document.getElementById('enabled');
     const elTargetLang = document.getElementById('targetLang');
@@ -11,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const elMyLangContainer = document.getElementById('myLang-container');
     const elStatus = document.getElementById('status');
     const elConnectionDot = document.getElementById('connection-dot');
+    const elLogoContainer = document.getElementById('logo-container');
 
     // Helper: UI Visibility
     const updateUiState = () => {
@@ -20,10 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide Delay if not in Timer mode
         if (mode === 'timer') {
             elDelayContainer.style.display = 'flex';
-            elDelayContainer.style.opacity = '1';
+            // elDelayContainer.style.opacity = '1'; // handled by CSS/browser render
         } else {
             elDelayContainer.style.display = 'none';
-            elDelayContainer.style.opacity = '0';
         }
 
         // Show My Lang if Conversation Mode is ON
@@ -87,28 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     elMyLang.addEventListener('change', saveConfig);
 
     function updateConnectionStatus(isEnabled) {
-        if (isEnabled) elConnectionDot.classList.add('active');
-        else elConnectionDot.classList.remove('active');
+        if (isEnabled) {
+            elConnectionDot.classList.add('active');
+            if (elLogoContainer) elLogoContainer.classList.add('active');
+        } else {
+            elConnectionDot.classList.remove('active');
+            if (elLogoContainer) elLogoContainer.classList.remove('active');
+        }
     }
 
-    // 4. Translate Page Action
-    const elTranslatePage = document.getElementById('translatePage');
-    if (elTranslatePage) {
-        elTranslatePage.addEventListener('click', () => {
-            // Visual Feedback
-            elStatus.textContent = 'Started...';
-            elStatus.classList.add('show');
-            setTimeout(() => { elStatus.classList.remove('show'); elStatus.textContent = 'Saved'; }, 2000);
-
-            // Send Command
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                if (tabs[0]) {
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        action: 'translatePage',
-                        targetLang: elMyLang.value // Reading Language
-                    }).catch(() => { });
-                }
-            });
-        });
-    }
 });
