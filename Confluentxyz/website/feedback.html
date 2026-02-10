@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Bêta - ConFluent</title>
+
+    <!-- FONTS -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- STYLES -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* FEEDBACK SPECIFIC STYLES */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 40px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-family: var(--font-head);
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-family: var(--font-body);
+            font-size: 16px;
+            transition: 0.3s;
+            background: var(--bg-main);
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .rating-option {
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .rating-option:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        input[type="radio"]:checked+.rating-option {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        /* Hide actual radio buttons */
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-violet));
+            border: none;
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">
+            <div class="orb-small"></div>
+            <span>ConFluent</span>
+        </div>
+        <a href="index.html" class="btn-text">← Retour</a>
+    </nav>
+
+    <div class="feedback-container fade-in-up">
+        <h1>Votre Avis Compte 💎</h1>
+        <p class="subtitle">Aidez-nous à rendre ConFluent parfait.</p>
+
+        <!-- FORM (Action to be replaced by user's endpoint like Formspree) -->
+        <form action="https://formspree.io/f/mqazzaao" method="POST">
+
+            <!-- SATISFACTION (1-5) -->
+            <div class="form-group" style="text-align: center;">
+                <label>Note Globale</label>
+                <div class="rating-group">
+                    <label>
+                        <input type="radio" name="rating" value="1" required>
+                        <div class="rating-option">1</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="2">
+                        <div class="rating-option">2</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="3">
+                        <div class="rating-option">3</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="4">
+                        <div class="rating-option">4</div>
+                    </label>
+                    <label>
+                        <input type="radio" name="rating" value="5">
+                        <div class="rating-option">5</div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- BEST FEATURE -->
+            <div class="form-group">
+                <label>Ce que vous avez le plus aimé ?</label>
+                <input type="text" name="best_feature" placeholder="Ex: La rapidité, le design, l'orbe..." required>
+            </div>
+
+            <!-- IMPROVEMENT -->
+            <div class="form-group">
+                <label>Une chose à améliorer ?</label>
+                <textarea name="improvement" placeholder="Si vous aviez une baguette magique..."></textarea>
+            </div>
+
+            <!-- BUGS -->
+            <div class="form-group">
+                <label>Avez-vous rencontré un bug ?</label>
+                <textarea name="bugs" placeholder="Décrivez ce qui s'est passé (optionnel)"></textarea>
+            </div>
+
+            <!-- EMAIL (Optional) -->
+            <div class="form-group">
+                <label>Votre Email (Optionnel)</label>
+                <input type="email" name="email" placeholder="Pour vous recontacter si besoin">
+            </div>
+
+            <button type="submit" class="btn-submit">Envoyer mon Avis 🚀</button>
+        </form>
+    </div>
+
+    <!-- SCRIPT FOR SIMPLE CONFIRMATION -->
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            // In a real scenario, Formspree handles the redirect/thanks page.
+            // This is just a placeholder action.
+        });
+    </script>
+
+</body>
+
+</html>
