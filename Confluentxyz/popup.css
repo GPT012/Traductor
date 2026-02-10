@@ -21,6 +21,12 @@
     --input-bg: #f1f5f9;
     /* Slate 100 */
 
+    --orb-bg-start: #ffffff;
+    --orb-bg-end: #f1f5f9;
+    --orb-shadow-1: rgba(148, 163, 184, 0.2);
+    --orb-shadow-2: rgba(255, 255, 255, 1);
+    --orb-shadow-3: rgba(0, 0, 0, 0.1);
+
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.5);
@@ -41,6 +47,13 @@ body.dark-mode {
     /* Slate 700 */
     --input-bg: #0f172a;
     /* Slate 900 (Inside Card) */
+
+    --orb-bg-start: #1e293b;
+    --orb-bg-end: #0f172a;
+    --orb-shadow-1: rgba(0, 0, 0, 0.5);
+    --orb-shadow-2: rgba(255, 255, 255, 0.05);
+    /* Subtle highlight */
+    --orb-shadow-3: rgba(0, 0, 0, 0.5);
 
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
@@ -141,13 +154,13 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffffff, #f1f5f9);
+    background: radial-gradient(circle at 30% 30%, var(--orb-bg-start), var(--orb-bg-end));
     box-shadow:
-        inset -2px -2px 5px rgba(148, 163, 184, 0.2),
+        inset -2px -2px 5px var(--orb-shadow-1),
         /* Shadow */
-        inset 2px 2px 5px rgba(255, 255, 255, 1),
+        inset 2px 2px 5px var(--orb-shadow-2),
         /* Highlight */
-        0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        0 4px 6px -1px var(--orb-shadow-3);
     /* Drop */
     display: flex;
     align-items: center;
@@ -174,8 +187,8 @@ body {
 /* ACTIVE STATE FOR LOGO */
 .logo-container.active {
     box-shadow:
-        inset -2px -2px 5px rgba(148, 163, 184, 0.2),
-        inset 2px 2px 5px rgba(255, 255, 255, 1),
+        inset -2px -2px 5px var(--orb-shadow-1),
+        inset 2px 2px 5px var(--orb-shadow-2),
         0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
