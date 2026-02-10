@@ -175,9 +175,10 @@ body {
     height: 18px;
     width: 18px;
     height: 18px;
-    color: #020617;
-    /* Slate 950 (Deepest Black/Blue) */
-    /* Removed white drop-shadow for cleaner look on light bg */
+    color: #131215;
+    /* User Specific Color (19, 18, 21) */
+    /* No filter for maximum cleanliness */
+    filter: none;
     transition: color 0.3s ease;
 }
 
@@ -205,8 +206,8 @@ body {
 body.dark-mode .fluent-icon {
     color: #f8fafc;
     /* White/Slate 50 in Dark Mode */
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    /* Soft glow instead of hard shadow */
+    filter: none;
+    /* Removed glow per request */
 }
 
 .logo-container.active .fluent-icon {
