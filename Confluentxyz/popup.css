@@ -18,11 +18,46 @@
     /* Emerald 500 (Active) */
     --border: #e2e8f0;
     /* Slate 200 */
+    --input-bg: #f1f5f9;
+    /* Slate 100 */
 
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.5);
     /* Blue Glow */
+}
+
+/* DARK MODE OVERRIDES */
+body.dark-mode {
+    --bg: #0f172a;
+    /* Slate 900 */
+    --surface: #1e293b;
+    /* Slate 800 */
+    --text: #f8fafc;
+    /* Slate 50 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+    --border: #334155;
+    /* Slate 700 */
+    --input-bg: #0f172a;
+    /* Slate 900 (Inside Card) */
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Ensure card border is visible in dark mode */
+body.dark-mode .card {
+    border-color: var(--border);
+}
+
+body.dark-mode .switch .slider {
+    background-color: var(--border);
+}
+
+body.dark-mode .switch input:checked+.slider {
+    background-color: var(--primary);
 }
 
 /* GLASS ICON STYLE */
@@ -70,6 +105,28 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 4px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text);
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
 }
 
 .brand {
@@ -208,7 +265,7 @@ label {
 select {
     width: 100%;
     appearance: none;
-    background: #f1f5f9;
+    background: var(--input-bg);
     border: 1px solid transparent;
     padding: 10px 12px;
     border-radius: 10px;
