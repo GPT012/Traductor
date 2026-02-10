@@ -176,6 +176,37 @@
     }
     
     @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+    
+    /* === DARK MODE OVERRIDES (FORCE SPECIFICITY) === */
+    /* This ensures Dark Mode wins over state-specific styles (on/off/working) */
+    
+    #tr-badge.tr-dark-mode,
+    #tr-badge.tr-dark-mode.state-on,
+    #tr-badge.tr-dark-mode.state-off,
+    #tr-badge.tr-dark-mode.state-working,
+    #tr-badge.tr-dark-mode.state-error,
+    #tr-badge.tr-dark-mode:hover {
+        background: #131215 !important;
+        box-shadow: none !important;
+        border: none !important;
+        animation: none !important; /* Optional: might keep animation if desired, but user wants flat */
+    }
+    
+    #tr-badge.tr-dark-mode.state-working {
+        /* Keep pulse but make it very subtle or invisible if user wants flat */
+        animation: tr-pulse-violet 2.5s infinite ease-in-out !important;
+    }
+    
+    #tr-badge.tr-dark-mode #tr-icon {
+        color: #e2e8f0 !important;
+        filter: none !important;
+        opacity: 0.9 !important;
+    }
+    
+    #tr-badge.tr-dark-mode.state-off #tr-icon {
+        color: #ef4444 !important; /* Keep red for off state but flat */
+        opacity: 0.6 !important;
+    }
   `;
 
   // === BADGE ===
@@ -214,22 +245,14 @@
   function updateTheme(theme) {
     if (!badge) return;
     if (theme === 'dark') {
-      // Clean Dark Mode - No Glare/Shadows
-      badge.style.setProperty('--tr-orb-bg', '#131215'); // User requested flat color
-      badge.style.setProperty('--tr-orb-shadow', 'none');
-      badge.style.setProperty('--tr-orb-border', 'none');
-
-      // Dark mode icon color
-      const icon = document.getElementById('tr-icon');
-      if (icon) icon.style.color = '#e2e8f0';
+      badge.classList.add('tr-dark-mode');
     } else {
-      // Restore Light Mode
+      badge.classList.remove('tr-dark-mode');
+
+      // Clean up previous inline style hacking just in case
       badge.style.removeProperty('--tr-orb-bg');
       badge.style.removeProperty('--tr-orb-shadow');
       badge.style.removeProperty('--tr-orb-border');
-
-      const icon = document.getElementById('tr-icon');
-      if (icon) icon.style.color = '#94a3b8';
     }
   }
 
@@ -683,12 +706,7 @@
       else stopConversationMode();
     }
 
-    if (m.action === 'statusChanged') {
-      isEnabled = m.enabled;
-      updateBadgeUI(isEnabled ? 'on' : 'off');
-      if (isEnabled && settings.conversationMode) startConversationMode();
-      else stopConversationMode();
-    }
+    /* Duplicate statusChanged block removed */
   });
 
   // === INIT ===
