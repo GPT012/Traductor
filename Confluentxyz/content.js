@@ -44,8 +44,11 @@
     delay: 1000,
     targetLang: 'en',
     triggerMode: 'timer',
+    triggerMode: 'timer',
     conversationMode: false,
-    myLang: 'fr'
+    myLang: 'fr',
+    targetLang: 'en',
+    theme: 'light'
   };
 
   // === CSS (ULTRA-PREMIUM CERAMIC/GLASS ORB) ===
@@ -76,7 +79,10 @@
       animation: tr-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
       
       /* HYPER-REALISTIC MATERIAL: White Matte Ceramic / Frosted Glass */
-      background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%) !important;
+      /* HYPER-REALISTIC MATERIAL: White Matte Ceramic / Frosted Glass */
+      background: var(--tr-orb-bg, radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%)) !important;
+      
+      /* COMPLEX LIGHTING & SHADOWS */
       
       /* COMPLEX LIGHTING & SHADOWS */
       /* 1. Top-left highlight (Specularity) */
@@ -205,6 +211,20 @@
     else {
       badge.classList.add(`state-${state}`);
       badge.title = state === 'on' ? 'Ready' : 'Disabled';
+    }
+  }
+
+  function updateTheme(theme) {
+    if (!badge) return;
+    if (theme === 'dark') {
+      badge.style.setProperty('--tr-orb-bg', 'radial-gradient(120% 120% at 30% 30%, #1e293b 0%, #0f172a 100%)');
+      // Dark mode icon color
+      const icon = document.getElementById('tr-icon');
+      if (icon) icon.style.color = '#e2e8f0';
+    } else {
+      badge.style.setProperty('--tr-orb-bg', 'radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%)');
+      const icon = document.getElementById('tr-icon');
+      if (icon) icon.style.color = '#94a3b8';
     }
   }
 
@@ -608,9 +628,12 @@
           if (c.triggerMode) settings.triggerMode = c.triggerMode;
           if (c.conversationMode !== undefined) settings.conversationMode = c.conversationMode;
           if (c.myLang) settings.myLang = c.myLang;
+          if (c.myLang) settings.myLang = c.myLang;
+          if (c.theme) settings.theme = c.theme;
           if (c.enabled !== undefined) isEnabled = c.enabled;
 
           updateBadgeUI(isEnabled ? 'on' : 'off');
+          updateTheme(settings.theme);
 
           // Handle Conversation Mode Toggle
           if (isEnabled && settings.conversationMode) {
@@ -635,9 +658,12 @@
       if (m.config.triggerMode) settings.triggerMode = m.config.triggerMode;
       if (m.config.conversationMode !== undefined) settings.conversationMode = m.config.conversationMode;
       if (m.config.myLang) settings.myLang = m.config.myLang;
+      if (m.config.myLang) settings.myLang = m.config.myLang;
+      if (m.config.theme) settings.theme = m.config.theme;
       if (m.config.enabled !== undefined) isEnabled = m.config.enabled;
 
       updateBadgeUI(isEnabled ? 'on' : 'off');
+      updateTheme(settings.theme);
 
       if (isEnabled && settings.conversationMode && !observer) {
         startConversationMode();
