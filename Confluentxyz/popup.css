@@ -173,9 +173,11 @@ body {
     height: 18px;
     width: 18px;
     height: 18px;
-    color: #1e293b;
-    /* Slate 800 (Dark by default in Light Mode) */
-    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+    width: 18px;
+    height: 18px;
+    color: #020617;
+    /* Slate 950 (Deepest Black/Blue) */
+    /* Removed white drop-shadow for cleaner look on light bg */
     transition: color 0.3s ease;
 }
 
@@ -203,7 +205,8 @@ body {
 body.dark-mode .fluent-icon {
     color: #f8fafc;
     /* White/Slate 50 in Dark Mode */
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    /* Soft glow instead of hard shadow */
 }
 
 .logo-container.active .fluent-icon {
