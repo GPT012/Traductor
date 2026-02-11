@@ -1,110 +1,223 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConFluent - Traduction Instantanée</title>
+    <title>ConFluent — Your Voice in Every Language</title>
     <meta name="description"
-        content="Traduisez vos conversations en temps réel sur Discord, Slack, et WhatsApp. Simple, rapide, et gratuit.">
+        content="Free Chrome extension that auto-translates what you type on Discord, Slack, WhatsApp and more. Real-time, private, effortless.">
 
     <!-- FONTS -->
-    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- STYLES -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- FAVICON (SVG INLINED FOR SIMPLICITY) -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>">
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" href="favicon.png">
 </head>
 
 <body>
 
-    <!-- NAV -->
-    <nav>
-        <div class="logo">
-            <div class="orb-small"></div>
-            <span>ConFluent</span>
-        </div>
-        <div class="nav-links">
-            <a href="feedback.html" class="btn-text">Donner mon avis</a>
-            <a href="#download" class="btn-secondary">Installer la Bêta</a>
+    <!-- === NAV === -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="logo">
+                <div class="logo-orb"></div>
+                <span>ConFluent</span>
+            </a>
+            <a href="#download" class="btn-nav">Get ConFluent Now</a>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
+    <!-- === HERO (CENTERED) === -->
     <header class="hero">
-        <div class="hero-content">
-            <h1 class="fade-in-up">Votre voix dans<br><span class="gradient-text">toutes les langues</span>.</h1>
-            <p class="fade-in-up delay-100">L'extension Chrome qui traduit vos conversations instantanément sur Discord,
-                WhatsApp et Slack. Sans copier-coller.</p>
-            <div class="cta-group fade-in-up delay-200">
-                <a href="#download" class="btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Télécharger la Bêta
-                </a>
-                <a href="#demo" class="btn-text">Voir la démo →</a>
-            </div>
-        </div>
+        <h1 class="reveal"><span class="thin">Your</span> voice <span class="thin">in every</span> <span
+                class="gradient-text">language.</span></h1>
+        <p class="hero-sub reveal">Instant, accurate real-time language translation,<br>seamlessly integrated into your
+            workflow.</p>
 
-        <!-- 3D ORB VISUAL -->
-        <div class="hero-visual fade-in">
-            <div class="orb-container">
-                <div class="orb-core">
-                    <svg class="fluent-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <!-- ORB -->
+        <div class="orb-section reveal">
+            <div class="orb-wrapper">
+                <div class="orb">
+                    <svg class="orb-icon" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M14.5 7.5C15.8807 7.5 17 8.61929 17 10C17 11.3807 15.8807 12.5 14.5 12.5C13.1193 12.5 12 11.3807 12 10C12 8.61929 13.1193 7.5 14.5 7.5ZM9.5 7.5C10.8807 7.5 12 8.61929 12 10C12 11.3807 10.8807 12.5 9.5 12.5C8.11929 12.5 7 11.3807 7 10C7 8.61929 8.11929 7.5 9.5 7.5ZM14.5 5.5C12.756 5.5 11.129 6.275 10 7.545C8.871 6.275 7.244 5.5 5.5 5.5C2.462 5.5 0 7.962 0 11C0 14.038 2.462 16.5 5.5 16.5C7.244 16.5 8.871 15.725 10 14.455C11.129 15.725 12.756 16.5 14.5 16.5C17.538 16.5 20 14.038 20 11C20 7.962 17.538 5.5 14.5 5.5Z" />
                     </svg>
                 </div>
-                <!-- Animated Rings -->
-                <div class="ring ring-1"></div>
-                <div class="ring ring-2"></div>
-                <div class="ring ring-3"></div>
+                <div class="orb-ring orb-ring-1"></div>
+                <div class="orb-ring orb-ring-2"></div>
+                <div class="orb-ring orb-ring-3"></div>
+                <div class="orb-glow"></div>
             </div>
         </div>
+
+        <a href="#download" class="btn-primary reveal">Download Beta</a>
     </header>
 
-    <!-- FEATURES -->
+    <!-- === FEATURES (3 COMPACT CARDS) === -->
     <section class="features" id="features">
-        <div class="feature-card">
-            <div class="icon-box blue">⚡</div>
-            <h3>Instantané</h3>
-            <p>Tapez dans votre langue, envoyez dans la leur. La traduction se fait en temps réel sans latence
-                perceptible.</p>
+        <div class="feature-card reveal">
+            <div class="feature-icon blue">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <div class="feature-text">
+                <h3>Real-Time Speed</h3>
+                <p>Translate text instantly as you type, without delay.</p>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon-box green">🔒</div>
-            <h3>100% Privé</h3>
-            <p>Vos conversations ne quittent pas votre navigateur. Tout est traité localement via l'API Chrome.</p>
+        <div class="feature-card reveal">
+            <div class="feature-icon green">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            <div class="feature-text">
+                <h3>Secure &amp; Private</h3>
+                <p>Your data is never stored, ensuring full confidentiality.</p>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon-box violet">🗣️</div>
-            <h3>Mode Conversation</h3>
-            <p>Traduisez aussi les messages reçus. Comprenez tout le monde, quelle que soit la langue.</p>
+        <div class="feature-card reveal">
+            <div class="feature-icon violet">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="10" r="1"></circle>
+                    <circle cx="8" cy="10" r="1"></circle>
+                    <circle cx="16" cy="10" r="1"></circle>
+                </svg>
+            </div>
+            <div class="feature-text">
+                <h3>Cross-Platform</h3>
+                <p>Works seamlessly across all your favorite communication tools.</p>
+            </div>
         </div>
     </section>
 
-    <!-- DOWNLOAD / FOOTER -->
+    <!-- === HOW IT WORKS === -->
+    <section class="how-section" id="how-it-works">
+        <p class="section-tag reveal">How it works</p>
+        <h2 class="section-title reveal">Simple. Seamless. <span class="gradient-text">Effective.</span></h2>
+
+        <div class="steps reveal">
+            <div class="step-card">
+                <div class="step-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" y1="20" x2="15" y2="20"></line>
+                        <line x1="12" y1="4" x2="12" y2="20"></line>
+                    </svg>
+                </div>
+                <h3>1. Type</h3>
+                <p>Start typing in your preferred language directly into any application.</p>
+            </div>
+            <div class="step-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+            <div class="step-card">
+                <div class="step-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                </div>
+                <h3>2. Translate</h3>
+                <p>ConFluent instantly detects and translates your text to the desired language.</p>
+            </div>
+            <div class="step-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+            <div class="step-card">
+                <div class="step-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </div>
+                <h3>3. Send</h3>
+                <p>Press send, and your message is delivered in the recipient's language.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- === LANGUAGES === -->
+    <section class="languages-section" id="languages">
+        <h2 class="section-title reveal"><span class="gradient-text">10+ languages</span> supported.</h2>
+        <div class="flags-row reveal">
+            <span class="flag">🇺🇸</span>
+            <span class="flag">🇬🇧</span>
+            <span class="flag">🇯🇵</span>
+            <span class="flag">🇪🇸</span>
+            <span class="flag">🇫🇷</span>
+            <span class="flag">🇮🇹</span>
+            <span class="flag">🇧🇷</span>
+            <span class="flag">🇩🇪</span>
+            <span class="flag">🇨🇳</span>
+            <span class="flag">🇷🇺</span>
+        </div>
+    </section>
+
+    <!-- === FOOTER === -->
     <footer id="download">
-        <div class="footer-content">
-            <h2>Prêt à briser la barrière de la langue ?</h2>
-            <p>Rejoignez la bêta privée dès maintenant.</p>
-            <a href="#" class="btn-primary large">Obtenir ConFluent (v2.0)</a>
-            <p class="subtext">Compatible Chrome, Brave, Edge • Gratuit</p>
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo-orb small"></div>
+                <span>ConFluent</span>
+            </div>
+            <nav class="footer-nav">
+                <a href="#features">About</a>
+                <a href="#features">Features</a>
+                <a href="feedback.html">Support</a>
+                <a href="https://twitter.com/ConFluentApp" target="_blank">Twitter</a>
+            </nav>
+            <a href="#" class="btn-footer">Get ConFluent Now</a>
         </div>
-        <div class="footer-bottom">
-            <span>© 2026 ConFluent</span>
-            <a href="https://twitter.com/ConFluentApp" target="_blank">Twitter</a>
-        </div>
+        <div class="footer-copy">© 2026 ConFluent — Free forever</div>
     </footer>
 
+    <!-- === SCROLL REVEAL === -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    observer.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Nav scroll effect
+        const nav = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 30);
+        }, { passive: true });
+    </script>
 </body>
 
 </html>
