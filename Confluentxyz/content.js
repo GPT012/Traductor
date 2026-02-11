@@ -592,100 +592,56 @@
     }
   }
 
-  // === VOICE-TO-TRANSLATE ===
+  // === VOICE-TO-TRANSLATE (Push-to-Talk) ===
   let voiceRecognition = null;
   let isRecording = false;
+  let voiceTranscript = '';
+  let ctrlHeld = false;
 
   function startVoiceRecording() {
     if (!settings.voiceEnabled || !isEnabled) return;
+    if (isRecording) return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      console.warn('[ConFluent] 🎤 SpeechRecognition not supported in this browser');
+      console.warn('[ConFluent] 🎤 SpeechRecognition not supported');
       updateBadgeUI('error');
       setTimeout(() => updateBadgeUI('on'), 2000);
       return;
     }
 
-    if (isRecording) {
-      stopVoiceRecording();
-      return;
-    }
-
+    voiceTranscript = '';
     voiceRecognition = new SpeechRecognition();
-    voiceRecognition.continuous = false;
-    voiceRecognition.interimResults = false;
-    voiceRecognition.lang = ''; // auto-detect source language
+    voiceRecognition.continuous = true;
+    voiceRecognition.interimResults = true;
     voiceRecognition.maxAlternatives = 1;
+    // Don't set lang — let the browser auto-detect
 
     voiceRecognition.onstart = () => {
       isRecording = true;
       updateBadgeUI('recording');
-      console.log('%c🎤 Voice recording started', 'color: #ef4444; font-weight: bold');
+      console.log('%c🎤 Recording... (hold Ctrl, release to stop)', 'color: #ef4444; font-weight: bold');
     };
 
     voiceRecognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.trim();
-      if (!transcript) {
-        updateBadgeUI('on');
-        return;
-      }
-
-      console.log(`%c🎤 Heard: "${transcript}"`, 'color: #3b82f6');
-      updateBadgeUI('working');
-
-      // Send to background for translation
-      chrome.runtime.sendMessage(
-        { action: 'translate', text: transcript, targetLang: settings.targetLang },
-        async (res) => {
-          if (chrome.runtime.lastError) {
-            console.error('[ConFluent] Voice translate error:', chrome.runtime.lastError.message);
-            updateBadgeUI('error');
-            setTimeout(() => updateBadgeUI('on'), 2000);
-            return;
-          }
-
-          if (res?.translation) {
-            console.log(`%c🎤 Translated: "${res.translation}"`, 'color: #10b981; font-weight: bold');
-
-            // Copy to clipboard
-            try {
-              await navigator.clipboard.writeText(res.translation);
-              console.log('%c📋 Copied to clipboard!', 'color: #10b981; font-weight: bold');
-              updateBadgeUI('voice-done');
-              setTimeout(() => updateBadgeUI('on'), 2500);
-            } catch (clipErr) {
-              // Fallback: use execCommand
-              try {
-                const ta = document.createElement('textarea');
-                ta.value = res.translation;
-                ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                ta.remove();
-                console.log('%c📋 Copied to clipboard (fallback)!', 'color: #10b981');
-                updateBadgeUI('voice-done');
-                setTimeout(() => updateBadgeUI('on'), 2500);
-              } catch {
-                console.error('[ConFluent] Failed to copy to clipboard');
-                updateBadgeUI('error');
-                setTimeout(() => updateBadgeUI('on'), 2000);
-              }
-            }
-          } else {
-            updateBadgeUI('error');
-            setTimeout(() => updateBadgeUI('on'), 2000);
-          }
+      let finalTranscript = '';
+      let interimTranscript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
-      );
+      }
+      voiceTranscript = (finalTranscript || interimTranscript).trim();
     };
 
     voiceRecognition.onerror = (event) => {
       console.warn('[ConFluent] 🎤 Voice error:', event.error);
       isRecording = false;
+      ctrlHeld = false;
       if (event.error === 'not-allowed') {
-        console.error('[ConFluent] Microphone permission denied');
+        console.error('[ConFluent] ❌ Microphone permission denied. Allow mic access for this site.');
       }
       updateBadgeUI('error');
       setTimeout(() => updateBadgeUI('on'), 2000);
@@ -693,12 +649,18 @@
 
     voiceRecognition.onend = () => {
       isRecording = false;
+      // If we have transcript, translate it
+      if (voiceTranscript) {
+        processVoiceTranscript(voiceTranscript);
+      } else {
+        updateBadgeUI('on');
+      }
     };
 
     try {
       voiceRecognition.start();
     } catch (e) {
-      console.error('[ConFluent] Failed to start voice recognition:', e);
+      console.error('[ConFluent] Failed to start voice:', e);
       isRecording = false;
       updateBadgeUI('error');
       setTimeout(() => updateBadgeUI('on'), 2000);
@@ -706,28 +668,115 @@
   }
 
   function stopVoiceRecording() {
+    if (voiceRecognition && isRecording) {
+      try {
+        voiceRecognition.stop(); // stop() triggers onend which processes transcript
+      } catch {
+        voiceRecognition.abort();
+        isRecording = false;
+        updateBadgeUI('on');
+      }
+    }
+  }
+
+  function cancelVoiceRecording() {
     if (voiceRecognition) {
       voiceRecognition.abort();
       voiceRecognition = null;
     }
+    voiceTranscript = '';
     isRecording = false;
+    ctrlHeld = false;
     updateBadgeUI('on');
-    console.log('%c🎤 Voice recording cancelled', 'color: #6b7280');
   }
 
-  // Alt+V hotkey
+  function processVoiceTranscript(text) {
+    if (!text || text.length < 1) {
+      updateBadgeUI('on');
+      return;
+    }
+
+    console.log(`%c🎤 Heard: "${text}"`, 'color: #3b82f6; font-weight: bold');
+    updateBadgeUI('working');
+
+    chrome.runtime.sendMessage(
+      { action: 'translate', text, targetLang: settings.targetLang },
+      async (res) => {
+        if (chrome.runtime.lastError) {
+          console.error('[ConFluent] Voice translate error:', chrome.runtime.lastError.message);
+          updateBadgeUI('error');
+          setTimeout(() => updateBadgeUI('on'), 2000);
+          return;
+        }
+
+        if (res?.translation) {
+          console.log(`%c🎤 Translated: "${res.translation}"`, 'color: #10b981; font-weight: bold');
+
+          // Copy to clipboard
+          try {
+            await navigator.clipboard.writeText(res.translation);
+            console.log('%c📋 Copied to clipboard! Paste with Cmd+V', 'color: #10b981; font-weight: bold');
+            updateBadgeUI('voice-done');
+            setTimeout(() => updateBadgeUI('on'), 2500);
+          } catch {
+            // Fallback
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = res.translation;
+              ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              ta.remove();
+              updateBadgeUI('voice-done');
+              setTimeout(() => updateBadgeUI('on'), 2500);
+            } catch {
+              updateBadgeUI('error');
+              setTimeout(() => updateBadgeUI('on'), 2000);
+            }
+          }
+        } else {
+          updateBadgeUI('error');
+          setTimeout(() => updateBadgeUI('on'), 2000);
+        }
+      }
+    );
+  }
+
+  // === PUSH-TO-TALK: Hold Ctrl to record, release to stop ===
   document.addEventListener('keydown', (e) => {
-    if (e.altKey && (e.key === 'v' || e.key === 'V')) {
-      e.preventDefault();
-      e.stopPropagation();
-      startVoiceRecording();
+    // Ctrl alone (no other modifiers, no repeat)
+    if (e.key === 'Control' && !e.repeat && !e.shiftKey && !e.altKey && !e.metaKey) {
+      ctrlHeld = true;
+      // Small delay to distinguish Ctrl-hold from Ctrl+shortcut
+      setTimeout(() => {
+        if (ctrlHeld && !isRecording) {
+          startVoiceRecording();
+        }
+      }, 300);
+    }
+    // If Ctrl is held with another key, it's a shortcut — cancel voice
+    if (ctrlHeld && e.key !== 'Control') {
+      ctrlHeld = false;
+      if (isRecording) {
+        cancelVoiceRecording();
+      }
+    }
+  }, true);
+
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'Control') {
+      ctrlHeld = false;
+      if (isRecording) {
+        stopVoiceRecording(); // Stop → triggers onend → translates → copies
+      }
     }
   }, true);
 
   // === CLEANUP ===
   function destroy() {
     stopConversationMode();
-    stopVoiceRecording();
+    cancelVoiceRecording();
     document.removeEventListener('input', handleInput, true);
     badge?.parentNode?.removeChild(badge);
     window.__confluentRunning = false;
