@@ -1,129 +1,106 @@
-// popup.js - Configuration v28.0 (White Orb Design)
+// Popup Controller — ConFluent v3.0 (Optimized)
+'use strict';
+
 document.addEventListener('DOMContentLoaded', () => {
-    const elEnabled = document.getElementById('enabled');
-    const elTargetLang = document.getElementById('targetLang');
-    const elTriggerMode = document.getElementById('triggerMode');
-    const elDelay = document.getElementById('delay');
-    const elDelayContainer = document.getElementById('delay-container');
-    const elConversationMode = document.getElementById('conversationMode');
-    const elMyLang = document.getElementById('myLang');
-    const elMyLangContainer = document.getElementById('myLang-container');
-    const elStatus = document.getElementById('status');
-    const elConnectionDot = document.getElementById('connection-dot');
-    const elLogoContainer = document.getElementById('logo-container');
-    const elThemeToggle = document.getElementById('theme-toggle');
+    // === DOM REFERENCES ===
+    const $ = (id) => document.getElementById(id);
+    const elEnabled = $('enabled');
+    const elTargetLang = $('targetLang');
+    const elDelay = $('delay');
+    const elTriggerMode = $('triggerMode');
+    const elConversationMode = $('conversationMode');
+    const elMyLang = $('myLang');
+    const elVoiceEnabled = $('voiceEnabled');
+    const elThemeToggle = $('theme-toggle');
+    const elStatus = $('status');
+    const elConversationContainer = $('conversationSettings');
+    const elDelayContainer = $('delayContainer');
 
-    // Helper: UI Visibility
-    const updateUiState = () => {
-        const mode = elTriggerMode.value;
-        const conversation = elConversationMode.checked;
+    // === DEBOUNCED SAVE ===
+    let saveTimer = null;
+    const SAVE_DEBOUNCE = 300;
 
-        // Hide Delay if not in Timer mode
-        if (mode === 'timer') {
-            elDelayContainer.style.display = 'flex';
-            // elDelayContainer.style.opacity = '1'; // handled by CSS/browser render
-        } else {
-            elDelayContainer.style.display = 'none';
-        }
+    function showToast(text = '✓ Saved') {
+        if (!elStatus) return;
+        elStatus.textContent = text;
+        elStatus.classList.add('show');
+        setTimeout(() => elStatus.classList.remove('show'), 1500);
+    }
 
-        // Show My Lang if Conversation Mode is ON
-        if (conversation) {
-            elMyLangContainer.style.display = 'flex';
-        } else {
-            elMyLangContainer.style.display = 'none';
-        }
-    };
+    // === LOAD CONFIG ===
+    chrome.storage.local.get(
+        ['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang', 'theme', 'voiceEnabled'],
+        (c) => {
+            if (chrome.runtime.lastError || !c) return;
 
-    // 1. Load Configuration
-    chrome.storage.local.get(['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang'], (c) => {
-        if (c) {
             elEnabled.checked = c.enabled !== false;
             if (c.targetLang) elTargetLang.value = c.targetLang;
             if (c.delay) elDelay.value = c.delay;
             if (c.triggerMode) elTriggerMode.value = c.triggerMode;
-            elConversationMode.checked = c.conversationMode === true;
+            if (c.conversationMode) elConversationMode.checked = true;
             if (c.myLang) elMyLang.value = c.myLang;
+            if (c.theme === 'dark') document.body.classList.add('dark-mode');
+            if (c.voiceEnabled !== undefined) elVoiceEnabled.checked = c.voiceEnabled;
+            else elVoiceEnabled.checked = true; // default on
 
-            if (c.theme === 'dark') {
-                document.body.classList.add('dark-mode');
-                updateThemeIcon(true);
-            }
-
-            updateConnectionStatus(c.enabled !== false);
-            updateUiState();
+            updateVisibility();
         }
-    });
+    );
 
-    // 2. Auto-Save Function
-    const saveConfig = () => {
-        const config = {
-            enabled: elEnabled.checked,
-            targetLang: elTargetLang.value,
-            triggerMode: elTriggerMode.value,
-            delay: parseInt(elDelay.value),
-            conversationMode: elConversationMode.checked,
-            conversationMode: elConversationMode.checked,
-            myLang: elMyLang.value,
-            theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
-        };
+    // === SAVE CONFIG (debounced) ===
+    function saveConfig() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+            const config = {
+                enabled: elEnabled.checked,
+                targetLang: elTargetLang.value,
+                triggerMode: elTriggerMode.value,
+                delay: parseInt(elDelay.value),
+                conversationMode: elConversationMode.checked,
+                myLang: elMyLang.value,
+                voiceEnabled: elVoiceEnabled.checked,
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+            };
 
-        updateConnectionStatus(config.enabled);
-        updateUiState();
+            chrome.storage.local.set(config);
 
-        chrome.storage.local.set(config, () => {
-            elStatus.classList.add('show');
-            setTimeout(() => { elStatus.classList.remove('show'); }, 1500);
-
+            // Broadcast to all tabs
             chrome.tabs.query({}, (tabs) => {
-                tabs.forEach(tab => {
+                for (const tab of tabs) {
                     chrome.tabs.sendMessage(tab.id, {
                         action: 'configChanged',
-                        config: config
+                        config
                     }).catch(() => { });
-                });
+                }
             });
-        });
-    };
 
-    // 3. Event Listeners
-    elEnabled.addEventListener('change', saveConfig);
-    elTargetLang.addEventListener('change', saveConfig);
-    elTriggerMode.addEventListener('change', saveConfig);
-    elDelay.addEventListener('change', saveConfig);
-    elConversationMode.addEventListener('change', saveConfig);
-    elConversationMode.addEventListener('change', saveConfig);
-    elMyLang.addEventListener('change', saveConfig);
-
-    // Theme Toggle
-    if (elThemeToggle) {
-        elThemeToggle.addEventListener('click', () => {
-            const isDark = document.body.classList.toggle('dark-mode');
-            updateThemeIcon(isDark);
-            saveConfig();
-        });
+            showToast();
+        }, SAVE_DEBOUNCE);
     }
 
-    function updateThemeIcon(isDark) {
-        if (!elThemeToggle) return;
-        if (isDark) {
-            // Show Sun (to switch to light)
-            elThemeToggle.innerHTML = `<svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-            elThemeToggle.setAttribute('aria-label', 'Switch to Light Mode');
-        } else {
-            // Show Moon (to switch to dark)
-            elThemeToggle.innerHTML = `<svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-            elThemeToggle.setAttribute('aria-label', 'Switch to Dark Mode');
+    // === VISIBILITY LOGIC ===
+    function updateVisibility() {
+        if (elConversationContainer) {
+            elConversationContainer.style.display = elConversationMode.checked ? 'flex' : 'none';
+        }
+        if (elDelayContainer) {
+            elDelayContainer.style.display = elTriggerMode.value === 'timer' ? 'flex' : 'none';
         }
     }
 
-    function updateConnectionStatus(isEnabled) {
-        if (isEnabled) {
-            elConnectionDot.classList.add('active');
-            if (elLogoContainer) elLogoContainer.classList.add('active');
-        } else {
-            elConnectionDot.classList.remove('active');
-            if (elLogoContainer) elLogoContainer.classList.remove('active');
-        }
+    // === EVENT LISTENERS ===
+    const inputs = [elEnabled, elTargetLang, elTriggerMode, elDelay, elConversationMode, elMyLang, elVoiceEnabled];
+    for (const input of inputs) {
+        if (input) input.addEventListener('change', saveConfig);
     }
 
+    // Conversation mode and trigger mode also update visibility
+    elConversationMode?.addEventListener('change', updateVisibility);
+    elTriggerMode?.addEventListener('change', updateVisibility);
+
+    // === THEME TOGGLE ===
+    elThemeToggle?.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        saveConfig();
+    });
 });

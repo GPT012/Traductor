@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "ConFluent",
     "version": "2.0.0",
-    "description": "Traduit automatiquement ce que vous tapez - 100% GRATUIT",
+    "description": "Auto-translate what you type — 100% FREE | Traduit automatiquement ce que vous tapez — GRATUIT",
     "permissions": [
         "storage",
         "activeTab",
@@ -41,5 +41,14 @@
     ],
     "background": {
         "service_worker": "background.js"
+    },
+    "commands": {
+        "voice-translate": {
+            "suggested_key": {
+                "default": "Alt+V",
+                "mac": "Alt+V"
+            },
+            "description": "Start voice-to-translate (speak and copy translation)"
+        }
     }
 }

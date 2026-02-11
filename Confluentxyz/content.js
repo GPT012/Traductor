@@ -1,65 +1,62 @@
 // ===================================
-// AUTO TRANSLATOR v28.0 - PERFORMANCE + BATCHING
-// Universal Support: Ctrl+A+Ctrl+V + Generic Detection
-// + Configurable Delay & Language
-// + Premium Minimalist Design
-// + Anti-Zombie & High Fidelity Events
-// + Self-Healing on Tab Switch
-// + Rapid (Instant) & Pro (Sentence) Modes
-// + Conversation Mode (Incoming Translation)
-// + BATCH TRANSLATION ENGINE (Performance Fix)
+// ConFluent v3.0 — OPTIMIZED TRANSLATION ENGINE
+// Batch Translation + Conversation Mode
+// Performance Tuned + Const Correct
 // ===================================
 
 (function () {
   'use strict';
 
-  // === PREVENTION DOUBLONS ===
-  if (window.hasAutoTranslatorRunning) return;
-  window.hasAutoTranslatorRunning = true;
+  // === SINGLETON GUARD ===
+  if (window.__confluentRunning) return;
+  window.__confluentRunning = true;
 
-  console.log('%c🌐 Translator v28.0 (Optimized)', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
+  console.log('%c🌐 ConFluent v3.0', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
 
   // === STATE ===
   let isEnabled = true;
+  let isTranslating = false;
+  let isDeleting = false;
   let typingTimer = null;
   let originalText = '';
   let lastTranslated = '';
-  let isTranslating = false;
-  let isDeleting = false;
   let lastInputTime = 0;
+  let translationGeneration = 0; // Stale callback guard
 
-  // Optimized Translation State
+  // Conversation Mode State
   let observer = null;
-  let processedNodes = new WeakSet(); // Kept for individual nodes if needed
-  let translatedMap = new WeakMap(); // Map<Node, string> - stores original text to avoid re-translation loop
+  const processedNodes = new WeakSet();
+  const translatedMap = new WeakMap();
 
-  // Batching State
-  let batchQueue = []; // Array<{node: Node, text: string}>
+  // Batching
+  const batchQueue = [];
   let batchTimer = null;
   const BATCH_DELAY = 100;
   const MAX_BATCH_SIZE = 50;
 
-  // Default Config
-  let settings = {
+  // Config
+  const settings = {
     delay: 1000,
     targetLang: 'en',
     triggerMode: 'timer',
-    triggerMode: 'timer',
     conversationMode: false,
     myLang: 'fr',
-    targetLang: 'en',
-    theme: 'light'
+    theme: 'light',
+    voiceEnabled: true
   };
 
-  // === CSS (ULTRA-PREMIUM CERAMIC/GLASS ORB) ===
+  // === PLATFORM DETECTION ===
+  const IS_MAC = /Mac/.test(navigator.userAgent);
+
+  // === INJECTED STYLES ===
   const style = document.createElement('style');
   style.id = 'tr-styles';
   style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
     @keyframes tr-fade-in { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     @keyframes tr-pulse-violet { 0% { box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3), inset 0 0 0 0 rgba(139, 92, 246, 0); } 50% { box-shadow: 0 10px 40px -5px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.1); } 100% { box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3), inset 0 0 0 0 rgba(139, 92, 246, 0); } }
     @keyframes tr-spin-subtle { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes tr-pulse-red { 0% { box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0); } 50% { box-shadow: 0 10px 40px -5px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.15); } 100% { box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0); } }
+    @keyframes tr-pulse-green { 0% { box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.4); } 50% { box-shadow: 0 10px 40px -5px rgba(16, 185, 129, 0.6); } 100% { box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.4); } }
 
     #tr-badge {
       all: initial !important;
@@ -77,109 +74,110 @@
       user-select: none !important;
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease !important;
       animation: tr-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
-      
-      /* HYPER-REALISTIC MATERIAL: White Matte Ceramic / Frosted Glass */
+
       background: var(--tr-orb-bg, radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%)) !important;
-      
-      /* COMPLEX LIGHTING & SHADOWS */
-      /* 1. Top-left highlight (Specularity) */
-      /* 2. Soft form shadow (Volume) */
-      /* 3. Bounce light from bottom (Environment) */
-      /* 4. Drop shadow (Distance from page) */
-      box-shadow: var(--tr-orb-shadow, 
-        inset 2px 2px 5px rgba(255, 255, 255, 1),      /* Highlight top-left */
-        inset -5px -5px 15px rgba(148, 163, 184, 0.3), /* Deep shadow bottom-right */
-        0 15px 35px -10px rgba(15, 23, 42, 0.2),       /* Main drop shadow */
+      box-shadow: var(--tr-orb-shadow,
+        inset 2px 2px 5px rgba(255, 255, 255, 1),
+        inset -5px -5px 15px rgba(148, 163, 184, 0.3),
+        0 15px 35px -10px rgba(15, 23, 42, 0.2),
         0 5px 15px -5px rgba(15, 23, 42, 0.1)) !important;
-      
-      border: var(--tr-orb-border, 1px solid rgba(255, 255, 255, 0.4)) !important; /* Subtle rim */
+      border: var(--tr-orb-border, 1px solid rgba(255, 255, 255, 0.4)) !important;
     }
 
-    #tr-badge:hover { 
-      transform: scale(1.08) translateY(-4px) !important; 
-      box-shadow: 
+    #tr-badge:hover {
+      transform: scale(1.08) translateY(-4px) !important;
+      box-shadow:
         inset 2px 2px 5px rgba(255, 255, 255, 1),
         inset -5px -5px 15px rgba(148, 163, 184, 0.3),
         0 25px 45px -12px rgba(15, 23, 42, 0.25),
         0 10px 20px -8px rgba(15, 23, 42, 0.15) !important;
     }
-    
+
     #tr-badge:active { transform: scale(0.96) translateY(0) !important; }
 
-    /* INFINITY ICON (Deep Etched Engraving) */
     #tr-icon {
       width: 26px !important;
       height: 26px !important;
-      color: #94a3b8 !important; /* Neutral grey base */
-      
-      /* ENGRAVED EFFECT */
-      /* Inner shadow to look pressed in */
+      color: #94a3b8 !important;
       filter: drop-shadow(0 1px 0 rgba(255,255,255,0.8)) drop-shadow(0 -1px 0 rgba(0,0,0,0.15)) !important;
-      
       transition: color 0.4s ease, filter 0.4s ease, transform 0.4s ease !important;
       opacity: 0.8 !important;
     }
 
     /* STATES */
-    
-    /* 1. ACTIVE (Green Glow) */
     #tr-badge.state-on {
-       /* Subtle green ambient light */
-       box-shadow: 
+       box-shadow:
         inset 2px 2px 5px rgba(255, 255, 255, 1),
         inset -5px -5px 15px rgba(148, 163, 184, 0.2),
-        0 15px 35px -10px rgba(16, 185, 129, 0.3), /* Colored shadow */
+        0 15px 35px -10px rgba(16, 185, 129, 0.3),
         0 5px 15px -5px rgba(16, 185, 129, 0.2) !important;
     }
-    #tr-badge.state-on #tr-icon { 
-      color: #10b981 !important; 
-      /* Inner glow for the icon */
+    #tr-badge.state-on #tr-icon {
+      color: #10b981 !important;
       filter: drop-shadow(0 1px 0 rgba(255,255,255,0.9)) drop-shadow(0 0 8px rgba(16, 185, 129, 0.4)) !important;
       opacity: 1 !important;
     }
 
-    /* 2. INACTIVE (Red/Grey Dimmed) */
     #tr-badge.state-off {
       background: radial-gradient(120% 120% at 30% 30%, #f1f5f9 0%, #e2e8f0 100%) !important;
-      box-shadow: 
+      box-shadow:
         inset 1px 1px 3px rgba(255, 255, 255, 0.8),
         inset -2px -2px 8px rgba(148, 163, 184, 0.2),
         0 10px 25px -8px rgba(15, 23, 42, 0.15) !important;
     }
-    #tr-badge.state-off #tr-icon { 
-      color: #ef4444 !important; /* Red but muted */
-      opacity: 0.5 !important; 
+    #tr-badge.state-off #tr-icon {
+      color: #ef4444 !important;
+      opacity: 0.5 !important;
       filter: grayscale(0.5) !important;
     }
 
-    /* 3. WORKING (Violet Magical Pulse) */
+    #tr-badge.state-recording {
+      animation: tr-pulse-red 1.5s infinite ease-in-out !important;
+      background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #fff5f5 40%, #fee2e2 100%) !important;
+    }
+    #tr-badge.state-recording #tr-icon {
+      color: #ef4444 !important;
+      animation: tr-spin-subtle 2s linear infinite !important;
+    }
+    #tr-badge.state-voice-done {
+      animation: tr-pulse-green 1.5s ease-in-out 2 !important;
+      background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f0fdf4 40%, #dcfce7 100%) !important;
+    }
+    #tr-badge.state-voice-done #tr-icon {
+      color: #10b981 !important;
+    }
+    #tr-badge.tr-dark-mode.state-recording {
+      background: #1a0505 !important;
+      animation: tr-pulse-red 1.5s infinite ease-in-out !important;
+    }
+    #tr-badge.tr-dark-mode.state-voice-done {
+      background: #051a0f !important;
+      animation: tr-pulse-green 1.5s ease-in-out 2 !important;
+    }
     #tr-badge.state-working {
       animation: tr-pulse-violet 2.5s infinite ease-in-out !important;
       background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #fdf4ff 40%, #f3e8ff 100%) !important;
     }
-    #tr-badge.state-working #tr-icon { 
-      color: #8b5cf6 !important; 
-      filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.6)) !important; /* Strong glow */
+    #tr-badge.state-working #tr-icon {
+      color: #8b5cf6 !important;
+      filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.6)) !important;
       opacity: 1 !important;
     }
 
-    /* 4. ERROR (Orange Alert) */
     #tr-badge.state-error {
       animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both !important;
-      box-shadow: 
+      box-shadow:
         inset 2px 2px 5px rgba(255, 255, 255, 1),
         0 0 0 2px rgba(249, 115, 22, 0.8),
         0 15px 35px -10px rgba(249, 115, 22, 0.4) !important;
     }
-    #tr-badge.state-error #tr-icon { 
-      color: #f97316 !important; 
+    #tr-badge.state-error #tr-icon {
+      color: #f97316 !important;
     }
-    
+
     @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-    
-    /* === DARK MODE OVERRIDES (FORCE SPECIFICITY) === */
-    /* This ensures Dark Mode wins over state-specific styles (on/off/working) */
-    
+
+    /* === DARK MODE === */
     #tr-badge.tr-dark-mode,
     #tr-badge.tr-dark-mode.state-on,
     #tr-badge.tr-dark-mode.state-off,
@@ -189,22 +187,21 @@
         background: #131215 !important;
         box-shadow: none !important;
         border: none !important;
-        animation: none !important; /* Optional: might keep animation if desired, but user wants flat */
+        animation: none !important;
     }
-    
+
     #tr-badge.tr-dark-mode.state-working {
-        /* Keep pulse but make it very subtle or invisible if user wants flat */
         animation: tr-pulse-violet 2.5s infinite ease-in-out !important;
     }
-    
+
     #tr-badge.tr-dark-mode #tr-icon {
         color: #e2e8f0 !important;
         filter: none !important;
         opacity: 0.9 !important;
     }
-    
+
     #tr-badge.tr-dark-mode.state-off #tr-icon {
-        color: #ef4444 !important; /* Keep red for off state but flat */
+        color: #ef4444 !important;
         opacity: 0.6 !important;
     }
   `;
@@ -215,28 +212,27 @@
 
   const badge = document.createElement('div');
   badge.id = 'tr-badge';
-  // SVG Infinity Symbol
   badge.innerHTML = `
     <svg id="tr-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 7.5C15.8807 7.5 17 8.61929 17 10C17 11.3807 15.8807 12.5 14.5 12.5C13.1193 12.5 12 11.3807 12 10C12 8.61929 13.1193 7.5 14.5 7.5ZM9.5 7.5C10.8807 7.5 12 8.61929 12 10C12 11.3807 10.8807 12.5 9.5 12.5C8.11929 12.5 7 11.3807 7 10C7 8.61929 8.11929 7.5 9.5 7.5ZM14.5 5.5C12.756 5.5 11.129 6.275 10 7.545C8.871 6.275 7.244 5.5 5.5 5.5C2.462 5.5 0 7.962 0 11C0 14.038 2.462 16.5 5.5 16.5C7.244 16.5 8.871 15.725 10 14.455C11.129 15.725 12.756 16.5 14.5 16.5C17.538 16.5 20 14.038 20 11C20 7.962 17.538 5.5 14.5 5.5Z" />
     </svg>
   `;
 
-  function updateBadgeUI(state, text) {
-    if (!badge || !badge.isConnected) return;
-    badge.classList.remove('state-on', 'state-off', 'state-typing', 'state-working', 'state-waiting', 'state-done', 'state-error');
+  // === BADGE UI ===
+  const BADGE_STATES = ['state-on', 'state-off', 'state-typing', 'state-working', 'state-waiting', 'state-done', 'state-error', 'state-recording', 'state-voice-done'];
+  const WORKING_STATES = new Set(['typing', 'working', 'waiting']);
 
-    // Normalization of states to colors
-    // typing/working/waiting -> Violet (working)
-    if (['typing', 'working', 'waiting'].includes(state)) {
+  function updateBadgeUI(state, text) {
+    if (!badge?.isConnected) return;
+    badge.classList.remove(...BADGE_STATES);
+
+    if (WORKING_STATES.has(state)) {
       badge.classList.add('state-working');
       badge.title = text || 'Translating...';
-    }
-    else if (state === 'done') {
-      badge.classList.add('state-on'); // Back to Green on done
+    } else if (state === 'done') {
+      badge.classList.add('state-on');
       badge.title = 'Ready';
-    }
-    else {
+    } else {
       badge.classList.add(`state-${state}`);
       badge.title = state === 'on' ? 'Ready' : 'Disabled';
     }
@@ -248,8 +244,6 @@
       badge.classList.add('tr-dark-mode');
     } else {
       badge.classList.remove('tr-dark-mode');
-
-      // Clean up previous inline style hacking just in case
       badge.style.removeProperty('--tr-orb-bg');
       badge.style.removeProperty('--tr-orb-shadow');
       badge.style.removeProperty('--tr-orb-border');
@@ -263,26 +257,25 @@
   }
 
   badge.onclick = (e) => { if (e.detail === 1) toggle(); };
-  badge.ondblclick = (e) => { e.preventDefault(); };
+  badge.ondblclick = (e) => e.preventDefault();
 
-  function find() {
-    // 1. Try Active Element first
-    let a = document.activeElement;
+  // === INPUT FIELD DETECTION ===
+  function findActiveEditor() {
+    const a = document.activeElement;
     if (a) {
       if (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') return a;
-      // Check for editor wrappers
-      let editor = a.closest('[data-slate-editor="true"]')
+      const editor = a.closest('[data-slate-editor="true"]')
         || a.closest('[contenteditable="true"]')
         || a.closest('[role="textbox"]')
         || a.closest('.ProseMirror');
       if (editor) return editor;
     }
 
-    // 2. Try Selection API (Critical for Discord where activeElement might be body or wrapper)
+    // Fallback: Selection API (critical for Discord)
     const sel = window.getSelection();
-    if (sel && sel.anchorNode) {
+    if (sel?.anchorNode) {
       const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
-      let editor = node.closest('[data-slate-editor="true"]')
+      const editor = node.closest('[data-slate-editor="true"]')
         || node.closest('[contenteditable="true"]')
         || node.closest('[role="textbox"]')
         || node.closest('.ProseMirror');
@@ -296,147 +289,137 @@
     if (!el) return '';
     try {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return el.value;
-
-      // DISCORD / SLATE / RICH TEXT
-      // Try innerText first (visual text)
-      let txt = el.innerText;
-
-      // Fallback: If innerText is empty or fails, try textContent
-      if (!txt || txt.trim() === '') {
-        txt = el.textContent;
-      }
-
-      // Cleanup ZWSP and trim
-      return (txt || '').replace(/\u200B/g, '');
-    } catch (e) { return ''; }
+      // Rich text: prefer innerText, fallback to textContent
+      const txt = el.innerText || el.textContent || '';
+      return txt.replace(/\u200B/g, ''); // Remove zero-width spaces
+    } catch { return ''; }
   }
 
-  // === HIGH FIDELITY SIMULATION ===
-  const isMac = navigator.userAgent.indexOf('Mac') !== -1;
-
+  // === HIGH FIDELITY TEXT REPLACEMENT ===
   function createKeyEvent(type, key, code, keyCode) {
     return new KeyboardEvent(type, {
-      key: key,
-      code: code,
-      keyCode: keyCode,
-      which: keyCode,
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-      ctrlKey: !isMac,
-      metaKey: isMac,
-      view: window
+      key, code, keyCode, which: keyCode,
+      bubbles: true, cancelable: true, composed: true,
+      ctrlKey: !IS_MAC, metaKey: IS_MAC, view: window
     });
   }
 
-  async function autoCtrlACtrlV(el, newText) {
+  async function replaceText(el, newText) {
     try {
       await navigator.clipboard.writeText(newText);
       el.focus();
 
-      // STANDARD INPUTS
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        try { el.select(); } catch (e) { }
-        document.execCommand('selectAll', false, null); // Backup
-        document.execCommand('insertText', false, newText); // Try standard execCommand first
-      }
-      else {
-        // RICH TEXT (DISCORD/SLATE)
-        // Ensure we really have focus on the editor logic
-        const sel = window.getSelection();
-        if (!sel.rangeCount) el.focus();
-
-        // 1. Select All (Aggressive Strategy)
-        // Try native command first (works best on ContentEditable)
+        // Standard inputs
+        el.select();
+        document.execCommand('insertText', false, newText);
+      } else {
+        // Rich text editors (Discord/Slate/ProseMirror)
         document.execCommand('selectAll', false, null);
+        await new Promise(r => setTimeout(r, 5));
 
-        // Short pause for editor to react
+        // Ensure full selection
+        const s = window.getSelection();
+        if (s.toString().length < getText(el).length) {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          s.removeAllRanges();
+          s.addRange(range);
+        }
+
+        // Simulate Cmd/Ctrl+A
+        el.dispatchEvent(createKeyEvent('keydown', 'a', 'KeyA', 65));
         await new Promise(r => setTimeout(r, 10));
 
-        // Backup: Manual Range Selection if execCommand didn't work well
-        try {
-          const s = window.getSelection();
-          if (s.toString().length < getText(el).length) {
-            const r = document.createRange();
-            r.selectNodeContents(el);
-            s.removeAllRanges();
-            s.addRange(r);
-          }
-        } catch (e) { }
-
-        // Backup 2: Simulations (Cmd+A / Ctrl+A)
-        el.dispatchEvent(createKeyEvent('keydown', 'a', 'KeyA', 65));
-
-        await new Promise(r => setTimeout(r, 20)); // Wait for selection to settle
-
-        // 3. Paste via Clipboard Event
+        // Paste via ClipboardEvent
         const dt = new DataTransfer();
         dt.setData('text/plain', newText);
         const pasteEvent = new ClipboardEvent('paste', {
-          bubbles: true, cancelable: true, composed: true, clipboardData: dt, view: window
+          bubbles: true, cancelable: true, composed: true,
+          clipboardData: dt, view: window
         });
         el.dispatchEvent(pasteEvent);
 
-        // 4. Force Update if necessary
-        // If paste wasn't prevented, we might need manual insertion
+        // Fallback if paste wasn't consumed
         if (!pasteEvent.defaultPrevented) {
           document.execCommand('insertText', false, newText);
         }
       }
 
-      // Verification & Cleanup
-      await new Promise(r => setTimeout(r, 50));
-
-      // Dispatch final input event to ensure UI updates
-      el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: newText, composed: true }));
+      // Notify UI
+      await new Promise(r => setTimeout(r, 20));
+      el.dispatchEvent(new InputEvent('input', {
+        bubbles: true, inputType: 'insertText', data: newText, composed: true
+      }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
-
-    } catch (err) { console.error('AutoPaste Warning:', err); }
+    } catch (err) {
+      console.warn('[ConFluent] Paste error:', err);
+    }
   }
 
-  // === TRANSLATION LOGIC (INPUT) ===
+  // === TRANSLATION LOGIC ===
   document.addEventListener('keydown', (e) => {
     if (!e.ctrlKey && !e.metaKey && e.key.length === 1) lastInputTime = Date.now();
-    if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
-      isDeleting = true; clearTimeout(typingTimer);
+    if (['Backspace', 'Delete'].includes(e.key)) {
+      isDeleting = true;
+      clearTimeout(typingTimer);
     }
   }, true);
 
   function translate(el, text, ignoreGuard = false) {
     if (isTranslating || !text || text.length < 2 || text === lastTranslated) return;
-    // Don't check guard if explicit trigger (Pro Mode)
     if (!ignoreGuard && Date.now() - lastInputTime < 50) return;
 
     isTranslating = true;
+    const gen = ++translationGeneration; // Stale guard
     updateBadgeUI('working');
 
     try {
-      chrome.runtime.sendMessage({ action: 'translate', text, targetLang: settings.targetLang }, async (res) => {
-        try {
-          if (chrome.runtime.lastError) {
-            if (chrome.runtime.lastError.message.includes('context invalidated')) { destroy(); return; }
-            updateBadgeUI('error'); setTimeout(() => updateBadgeUI('on'), 2000); return;
+      chrome.runtime.sendMessage(
+        { action: 'translate', text, targetLang: settings.targetLang },
+        async (res) => {
+          try {
+            // Discard stale results
+            if (gen !== translationGeneration) return;
+
+            if (chrome.runtime.lastError) {
+              if (chrome.runtime.lastError.message.includes('context invalidated')) {
+                destroy();
+                return;
+              }
+              updateBadgeUI('error');
+              setTimeout(() => updateBadgeUI('on'), 2000);
+              return;
+            }
+
+            if (res?.translation && res.translation.toLowerCase() !== text.toLowerCase()) {
+              if (ignoreGuard || (getText(el) === text && Date.now() - lastInputTime > 50)) {
+                await replaceText(el, res.translation);
+                originalText = res.translation;
+                lastTranslated = res.translation;
+                updateBadgeUI('done');
+              } else {
+                updateBadgeUI('on');
+              }
+            } else {
+              updateBadgeUI('on');
+            }
+          } finally {
+            isTranslating = false;
           }
-          if (res?.translation && res.translation.toLowerCase() !== text.toLowerCase()) {
-            // Check guard again unless ignored
-            if (ignoreGuard || (getText(el) === text && Date.now() - lastInputTime > 50)) {
-              await autoCtrlACtrlV(el, res.translation); // Paste triggers input events, must be ignored by isTranslating=true
-              originalText = res.translation;
-              lastTranslated = res.translation;
-              updateBadgeUI('done', res.translation);
-            } else updateBadgeUI('on');
-          } else updateBadgeUI('on');
-        } finally {
-          isTranslating = false; // Release lock only after paste completes
         }
-      });
-    } catch (e) { isTranslating = false; destroy(); }
+      );
+    } catch {
+      isTranslating = false;
+      destroy();
+    }
   }
 
-  function handleInput(e) {
+  // === UNIFIED INPUT HANDLER ===
+  function handleInput() {
     if (!isEnabled || isTranslating) return;
     lastInputTime = Date.now();
-    const el = find();
+    const el = findActiveEditor();
     if (!el) return;
     const currentText = getText(el).trim();
 
@@ -449,79 +432,75 @@
       clearTimeout(typingTimer);
 
       const mode = settings.triggerMode || 'timer';
+      const lastChar = currentText.slice(-1);
 
       if (mode === 'pro') {
-        const lastChar = currentText.slice(-1);
         if (['.', '!', '?', '\n'].includes(lastChar)) {
-          updateBadgeUI('waiting');
           translate(el, currentText, true);
         }
-      }
-      else if (mode === 'rapid') {
-        const lastChar = currentText.slice(-1);
-        if ([' ', '.', ',', '!', '?', '\n'].includes(lastChar)) {
-          typingTimer = setTimeout(() => {
-            updateBadgeUI('waiting');
-            translate(el, currentText, true);
-          }, 50);
-        } else {
-          typingTimer = setTimeout(() => {
-            updateBadgeUI('waiting');
-            translate(el, currentText);
-          }, 1000);
-        }
-      }
-      else {
-        typingTimer = setTimeout(() => {
-          updateBadgeUI('waiting');
-          translate(el, currentText);
-        }, settings.delay);
+      } else if (mode === 'rapid') {
+        const delay = [' ', '.', ',', '!', '?', '\n'].includes(lastChar) ? 50 : 1000;
+        typingTimer = setTimeout(() => translate(el, currentText, delay === 50), delay);
+      } else {
+        // Timer mode (default)
+        typingTimer = setTimeout(() => translate(el, currentText), settings.delay);
       }
     }
   }
 
-  // === CONVERSATION MODE (INCOMING) ===
+  // Single unified listener (no duplicate keyup handler)
+  document.addEventListener('input', handleInput, true);
+  document.addEventListener('keyup', (e) => {
+    // Only handle printable keys as fallback for editors that suppress 'input'
+    if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    handleInput();
+  }, true);
+
+  // Track focus changes to reset originalText
+  const resetOriginal = () => {
+    setTimeout(() => {
+      const el = findActiveEditor();
+      if (el) originalText = getText(el);
+    }, 100);
+  };
+  document.addEventListener('click', resetOriginal, true);
+  document.addEventListener('focus', resetOriginal, true);
+
+  // === CONVERSATION MODE ===
   function startConversationMode() {
     if (observer) observer.disconnect();
-    processedNodes = new WeakSet();
 
-    console.log('🗣️ Conversation Mode STARTED: Reading in', settings.myLang);
+    console.log('🗣️ Conversation Mode ON: Reading in', settings.myLang);
     updateBadgeUI('on');
 
     let mutationQueue = [];
     let mutationTimer = null;
 
-    // Debounced Mutation Observer
     observer = new MutationObserver(mutations => {
       if (!isEnabled || !settings.conversationMode) return;
-      // ... (existing mutation logic)
-      let hasUpdate = false;
-      mutations.forEach(m => {
-        if (m.type === 'childList') {
-          m.addedNodes.forEach(n => mutationQueue.push(n));
-          hasUpdate = true;
-        }
-      });
-      if (!hasUpdate) return;
 
-      if (mutationTimer) clearTimeout(mutationTimer);
-      mutationTimer = setTimeout(() => {
-        if (mutationQueue.length > 0) {
-          const nodesToProcess = [...mutationQueue];
-          mutationQueue = [];
-          nodesToProcess.forEach(node => walkAndQueue(node));
+      let hasNew = false;
+      for (const m of mutations) {
+        if (m.type === 'childList') {
+          for (const n of m.addedNodes) {
+            mutationQueue.push(n);
+            hasNew = true;
+          }
         }
+      }
+      if (!hasNew) return;
+
+      clearTimeout(mutationTimer);
+      mutationTimer = setTimeout(() => {
+        const nodes = mutationQueue.splice(0);
+        for (const node of nodes) walkAndQueue(node);
       }, 500);
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // === NEW: INSTANT SCAN OF EXISTING CONTENT ===
-    // This allows translating the conversation history immediately without refresh
-    console.log('🗣️ Conversation Mode: Scanning existing content...');
-    setTimeout(() => {
-      walkAndQueue(document.body);
-    }, 100);
+    // Scan existing content immediately
+    setTimeout(() => walkAndQueue(document.body), 100);
   }
 
   function stopConversationMode() {
@@ -529,16 +508,17 @@
       observer.disconnect();
       observer = null;
     }
-    processedNodes = new WeakSet();
-    console.log('🗣️ Conversation Mode STOPPED');
+    console.log('🗣️ Conversation Mode OFF');
   }
+
+  // === BATCH TRANSLATION ===
+  const BATCH_DELIMITER = '\n\n====B====\n\n';
 
   function flushBatch() {
     if (batchQueue.length === 0) return;
 
-    const currentBatch = batchQueue.splice(0, MAX_BATCH_SIZE);
-    const texts = currentBatch.map(item => item.text);
-    const hugeText = texts.join('\n\n====B====\n\n'); // Unique delimiter
+    const batch = batchQueue.splice(0, MAX_BATCH_SIZE);
+    const hugeText = batch.map(item => item.text).join(BATCH_DELIMITER);
 
     updateBadgeUI('working', 'Translating incoming...');
 
@@ -548,30 +528,22 @@
       targetLang: settings.myLang
     }, (res) => {
       updateBadgeUI('on');
+      if (chrome.runtime.lastError || !res?.translation) return;
 
-      if (chrome.runtime.lastError) return;
-
-      if (res && res.translation) {
-        const translatedParts = res.translation.split(/\n\n====B====\n\n/);
-
-        currentBatch.forEach((item, index) => {
-          if (translatedParts[index]) {
-            const translation = translatedParts[index].trim();
-            // Minimal check to avoid bad replacements
-            if (translation && translation.length > 0) {
-              item.node.nodeValue = translation;
-              translatedMap.set(item.node, translation);
-            }
-          }
-        });
-      }
+      const parts = res.translation.split(new RegExp(BATCH_DELIMITER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      batch.forEach((item, i) => {
+        const translation = parts[i]?.trim();
+        if (translation?.length > 0) {
+          item.node.nodeValue = translation;
+          translatedMap.set(item.node, translation);
+        }
+      });
     });
   }
 
   function queueNodeForTranslation(node, text) {
     batchQueue.push({ node, text });
-
-    if (batchTimer) clearTimeout(batchTimer);
+    clearTimeout(batchTimer);
 
     if (batchQueue.length >= MAX_BATCH_SIZE) {
       flushBatch();
@@ -580,133 +552,256 @@
     }
   }
 
+  // === DOM WALKER (Optimized) ===
+  const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'CODE', 'PRE', 'SVG']);
+
   function walkAndQueue(rootNode) {
     if (!rootNode) return;
 
-    const treeWalker = document.createTreeWalker(
-      rootNode.nodeType === Node.ELEMENT_NODE ? rootNode : document.body,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode: function (node) {
-          // Ignore script, style, etc.
-          const parent = node.parentNode;
-          if (!parent) return NodeFilter.FILTER_REJECT;
+    const root = rootNode.nodeType === Node.ELEMENT_NODE ? rootNode : document.body;
 
-          const tag = parent.tagName.toUpperCase();
-          if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'CODE', 'PRE'].includes(tag)) {
-            return NodeFilter.FILTER_REJECT;
-          }
-          if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
-          if (parent.getAttribute && (parent.getAttribute('translate') === 'no' || parent.classList.contains('notranslate'))) {
-            return NodeFilter.FILTER_REJECT;
-          }
-
-          // Content checks
-          const text = node.nodeValue.trim();
-          if (text.length < 3 || text.match(/^\d+$/)) return NodeFilter.FILTER_SKIP; // Ignore numbers/short
-
-          if (translatedMap.has(node)) return NodeFilter.FILTER_REJECT;
-          if (processedNodes.has(node)) return NodeFilter.FILTER_REJECT;
-
-          return NodeFilter.FILTER_ACCEPT;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentNode;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        if (SKIP_TAGS.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
+        if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
+        if (parent.getAttribute?.('translate') === 'no' || parent.classList?.contains('notranslate')) {
+          return NodeFilter.FILTER_REJECT;
         }
-      }
-    );
 
-    let currentNode;
+        const text = node.nodeValue.trim();
+        if (text.length < 3 || /^\d+$/.test(text)) return NodeFilter.FILTER_SKIP;
+        if (translatedMap.has(node) || processedNodes.has(node)) return NodeFilter.FILTER_REJECT;
+
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
     if (rootNode.nodeType === Node.TEXT_NODE) {
-      // Manual check for single text node
       if (rootNode.nodeValue.trim().length >= 3 && !processedNodes.has(rootNode)) {
         processedNodes.add(rootNode);
         queueNodeForTranslation(rootNode, rootNode.nodeValue.trim());
       }
     } else {
-      while (currentNode = treeWalker.nextNode()) {
-        processedNodes.add(currentNode);
-        queueNodeForTranslation(currentNode, currentNode.nodeValue.trim());
+      let current;
+      while ((current = walker.nextNode())) {
+        processedNodes.add(current);
+        queueNodeForTranslation(current, current.nodeValue.trim());
       }
     }
   }
 
+  // === VOICE-TO-TRANSLATE ===
+  let voiceRecognition = null;
+  let isRecording = false;
+
+  function startVoiceRecording() {
+    if (!settings.voiceEnabled || !isEnabled) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('[ConFluent] 🎤 SpeechRecognition not supported in this browser');
+      updateBadgeUI('error');
+      setTimeout(() => updateBadgeUI('on'), 2000);
+      return;
+    }
+
+    if (isRecording) {
+      stopVoiceRecording();
+      return;
+    }
+
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = false;
+    voiceRecognition.lang = ''; // auto-detect source language
+    voiceRecognition.maxAlternatives = 1;
+
+    voiceRecognition.onstart = () => {
+      isRecording = true;
+      updateBadgeUI('recording');
+      console.log('%c🎤 Voice recording started', 'color: #ef4444; font-weight: bold');
+    };
+
+    voiceRecognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      if (!transcript) {
+        updateBadgeUI('on');
+        return;
+      }
+
+      console.log(`%c🎤 Heard: "${transcript}"`, 'color: #3b82f6');
+      updateBadgeUI('working');
+
+      // Send to background for translation
+      chrome.runtime.sendMessage(
+        { action: 'translate', text: transcript, targetLang: settings.targetLang },
+        async (res) => {
+          if (chrome.runtime.lastError) {
+            console.error('[ConFluent] Voice translate error:', chrome.runtime.lastError.message);
+            updateBadgeUI('error');
+            setTimeout(() => updateBadgeUI('on'), 2000);
+            return;
+          }
+
+          if (res?.translation) {
+            console.log(`%c🎤 Translated: "${res.translation}"`, 'color: #10b981; font-weight: bold');
+
+            // Copy to clipboard
+            try {
+              await navigator.clipboard.writeText(res.translation);
+              console.log('%c📋 Copied to clipboard!', 'color: #10b981; font-weight: bold');
+              updateBadgeUI('voice-done');
+              setTimeout(() => updateBadgeUI('on'), 2500);
+            } catch (clipErr) {
+              // Fallback: use execCommand
+              try {
+                const ta = document.createElement('textarea');
+                ta.value = res.translation;
+                ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                console.log('%c📋 Copied to clipboard (fallback)!', 'color: #10b981');
+                updateBadgeUI('voice-done');
+                setTimeout(() => updateBadgeUI('on'), 2500);
+              } catch {
+                console.error('[ConFluent] Failed to copy to clipboard');
+                updateBadgeUI('error');
+                setTimeout(() => updateBadgeUI('on'), 2000);
+              }
+            }
+          } else {
+            updateBadgeUI('error');
+            setTimeout(() => updateBadgeUI('on'), 2000);
+          }
+        }
+      );
+    };
+
+    voiceRecognition.onerror = (event) => {
+      console.warn('[ConFluent] 🎤 Voice error:', event.error);
+      isRecording = false;
+      if (event.error === 'not-allowed') {
+        console.error('[ConFluent] Microphone permission denied');
+      }
+      updateBadgeUI('error');
+      setTimeout(() => updateBadgeUI('on'), 2000);
+    };
+
+    voiceRecognition.onend = () => {
+      isRecording = false;
+    };
+
+    try {
+      voiceRecognition.start();
+    } catch (e) {
+      console.error('[ConFluent] Failed to start voice recognition:', e);
+      isRecording = false;
+      updateBadgeUI('error');
+      setTimeout(() => updateBadgeUI('on'), 2000);
+    }
+  }
+
+  function stopVoiceRecording() {
+    if (voiceRecognition) {
+      voiceRecognition.abort();
+      voiceRecognition = null;
+    }
+    isRecording = false;
+    updateBadgeUI('on');
+    console.log('%c🎤 Voice recording cancelled', 'color: #6b7280');
+  }
+
+  // Alt+V hotkey
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey && (e.key === 'v' || e.key === 'V')) {
+      e.preventDefault();
+      e.stopPropagation();
+      startVoiceRecording();
+    }
+  }, true);
+
   // === CLEANUP ===
   function destroy() {
     stopConversationMode();
+    stopVoiceRecording();
     document.removeEventListener('input', handleInput, true);
-    if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
-    window.hasAutoTranslatorRunning = false;
+    badge?.parentNode?.removeChild(badge);
+    window.__confluentRunning = false;
   }
-
-  document.addEventListener('input', handleInput, true);
-  document.addEventListener('keyup', (e) => {
-    // Fallback for complex editors that might suppress 'input' events (like Discord sometimes)
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Shift', 'Control', 'Alt', 'Meta', 'Escape'].includes(e.key)) return;
-    handleInput(e);
-  }, true);
-  document.addEventListener('click', () => { setTimeout(() => { const el = find(); if (el) originalText = getText(el); }, 100); }, true);
-  document.addEventListener('focus', () => { const el = find(); if (el) originalText = getText(el); }, true);
 
   // === CONFIG & MESSAGING ===
   function loadConfig() {
     try {
-      chrome.storage.local.get(['delay', 'targetLang', 'enabled', 'triggerMode', 'conversationMode', 'myLang'], (c) => {
-        if (chrome.runtime.lastError) return;
-        if (c) {
+      chrome.storage.local.get(
+        ['delay', 'targetLang', 'enabled', 'triggerMode', 'conversationMode', 'myLang', 'theme', 'voiceEnabled'],
+        (c) => {
+          if (chrome.runtime.lastError || !c) return;
+
           if (c.delay) settings.delay = parseInt(c.delay);
           if (c.targetLang) settings.targetLang = c.targetLang;
           if (c.triggerMode) settings.triggerMode = c.triggerMode;
           if (c.conversationMode !== undefined) settings.conversationMode = c.conversationMode;
           if (c.myLang) settings.myLang = c.myLang;
-          if (c.myLang) settings.myLang = c.myLang;
           if (c.theme) settings.theme = c.theme;
           if (c.enabled !== undefined) isEnabled = c.enabled;
+          if (c.voiceEnabled !== undefined) settings.voiceEnabled = c.voiceEnabled;
 
           updateBadgeUI(isEnabled ? 'on' : 'off');
           updateTheme(settings.theme);
 
-          // Handle Conversation Mode Toggle
           if (isEnabled && settings.conversationMode) {
             startConversationMode();
           } else {
             stopConversationMode();
           }
         }
-      });
-    } catch (e) { }
+      );
+    } catch { }
   }
 
-  chrome.runtime.onMessage.addListener((m, sender, sendResponse) => {
-    if (m.action === 'ping') {
-      sendResponse({ status: 'pong', enabled: isEnabled });
-      return;
-    }
+  chrome.runtime.onMessage.addListener((m, _sender, sendResponse) => {
+    switch (m.action) {
+      case 'ping':
+        sendResponse({ status: 'pong', enabled: isEnabled });
+        return;
 
-    if (m.action === 'configChanged') {
-      if (m.config.delay) settings.delay = parseInt(m.config.delay);
-      if (m.config.targetLang) settings.targetLang = m.config.targetLang;
-      if (m.config.triggerMode) settings.triggerMode = m.config.triggerMode;
-      if (m.config.conversationMode !== undefined) settings.conversationMode = m.config.conversationMode;
-      if (m.config.myLang) settings.myLang = m.config.myLang;
-      if (m.config.myLang) settings.myLang = m.config.myLang;
-      if (m.config.theme) settings.theme = m.config.theme;
-      if (m.config.enabled !== undefined) isEnabled = m.config.enabled;
+      case 'configChanged': {
+        const c = m.config;
+        if (c.delay) settings.delay = parseInt(c.delay);
+        if (c.targetLang) settings.targetLang = c.targetLang;
+        if (c.triggerMode) settings.triggerMode = c.triggerMode;
+        if (c.conversationMode !== undefined) settings.conversationMode = c.conversationMode;
+        if (c.myLang) settings.myLang = c.myLang;
+        if (c.theme) settings.theme = c.theme;
+        if (c.enabled !== undefined) isEnabled = c.enabled;
+        if (c.voiceEnabled !== undefined) settings.voiceEnabled = c.voiceEnabled;
 
-      updateBadgeUI(isEnabled ? 'on' : 'off');
-      updateTheme(settings.theme);
+        updateBadgeUI(isEnabled ? 'on' : 'off');
+        updateTheme(settings.theme);
 
-      if (isEnabled && settings.conversationMode && !observer) {
-        startConversationMode();
-      } else if ((!isEnabled || !settings.conversationMode) && observer) {
-        stopConversationMode();
+        if (isEnabled && settings.conversationMode && !observer) {
+          startConversationMode();
+        } else if ((!isEnabled || !settings.conversationMode) && observer) {
+          stopConversationMode();
+        }
+        return;
       }
-    }
-    if (m.action === 'statusChanged') {
-      isEnabled = m.enabled;
-      updateBadgeUI(isEnabled ? 'on' : 'off');
-      if (isEnabled && settings.conversationMode) startConversationMode();
-      else stopConversationMode();
-    }
 
-    /* Duplicate statusChanged block removed */
+      case 'statusChanged':
+        isEnabled = m.enabled;
+        updateBadgeUI(isEnabled ? 'on' : 'off');
+        if (isEnabled && settings.conversationMode) startConversationMode();
+        else stopConversationMode();
+        return;
+
+      case 'startVoice':
+        startVoiceRecording();
+        return;
+    }
   });
 
   // === INIT ===
@@ -715,7 +810,7 @@
     (document.head || document.documentElement).appendChild(style);
     (document.body || document.documentElement).appendChild(badge);
     loadConfig();
-    console.log('🌐 v28.0 | Optimized Batch Engine Ready');
+    console.log('🌐 ConFluent v3.0 | Ready');
   }
 
   if (document.readyState === 'complete') init();
