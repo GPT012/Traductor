@@ -188,16 +188,4 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
     } catch (_) { }
 });
 
-// === VOICE-TO-TRANSLATE COMMAND ===
-chrome.commands.onCommand.addListener(async (command) => {
-    if (command === 'voice-translate') {
-        try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tab?.id && tab.url?.startsWith('http')) {
-                chrome.tabs.sendMessage(tab.id, { action: 'startVoice' }).catch(() => { });
-            }
-        } catch (_) { }
-    }
-});
-
-console.log('[ConFluent] ✅ Service Worker v3.0 (Cache + Dedup + Voice)');
+console.log('[ConFluent] ✅ Service Worker v3.0 (Cache + Dedup)');

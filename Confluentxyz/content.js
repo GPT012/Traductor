@@ -41,8 +41,7 @@
     triggerMode: 'timer',
     conversationMode: false,
     myLang: 'fr',
-    theme: 'light',
-    voiceEnabled: true
+    theme: 'light'
   };
 
   // === PLATFORM DETECTION ===
@@ -55,8 +54,6 @@
     @keyframes tr-fade-in { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     @keyframes tr-pulse-violet { 0% { box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3), inset 0 0 0 0 rgba(139, 92, 246, 0); } 50% { box-shadow: 0 10px 40px -5px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.1); } 100% { box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3), inset 0 0 0 0 rgba(139, 92, 246, 0); } }
     @keyframes tr-spin-subtle { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes tr-pulse-red { 0% { box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0); } 50% { box-shadow: 0 10px 40px -5px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.15); } 100% { box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.4), inset 0 0 0 0 rgba(239, 68, 68, 0); } }
-    @keyframes tr-pulse-green { 0% { box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.4); } 50% { box-shadow: 0 10px 40px -5px rgba(16, 185, 129, 0.6); } 100% { box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.4); } }
 
     #tr-badge {
       all: initial !important;
@@ -131,29 +128,6 @@
       filter: grayscale(0.5) !important;
     }
 
-    #tr-badge.state-recording {
-      animation: tr-pulse-red 1.5s infinite ease-in-out !important;
-      background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #fff5f5 40%, #fee2e2 100%) !important;
-    }
-    #tr-badge.state-recording #tr-icon {
-      color: #ef4444 !important;
-      animation: tr-spin-subtle 2s linear infinite !important;
-    }
-    #tr-badge.state-voice-done {
-      animation: tr-pulse-green 1.5s ease-in-out 2 !important;
-      background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #f0fdf4 40%, #dcfce7 100%) !important;
-    }
-    #tr-badge.state-voice-done #tr-icon {
-      color: #10b981 !important;
-    }
-    #tr-badge.tr-dark-mode.state-recording {
-      background: #1a0505 !important;
-      animation: tr-pulse-red 1.5s infinite ease-in-out !important;
-    }
-    #tr-badge.tr-dark-mode.state-voice-done {
-      background: #051a0f !important;
-      animation: tr-pulse-green 1.5s ease-in-out 2 !important;
-    }
     #tr-badge.state-working {
       animation: tr-pulse-violet 2.5s infinite ease-in-out !important;
       background: radial-gradient(120% 120% at 30% 30%, #ffffff 0%, #fdf4ff 40%, #f3e8ff 100%) !important;
@@ -219,7 +193,7 @@
   `;
 
   // === BADGE UI ===
-  const BADGE_STATES = ['state-on', 'state-off', 'state-typing', 'state-working', 'state-waiting', 'state-done', 'state-error', 'state-recording', 'state-voice-done'];
+  const BADGE_STATES = ['state-on', 'state-off', 'state-typing', 'state-working', 'state-waiting', 'state-done', 'state-error'];
   const WORKING_STATES = new Set(['typing', 'working', 'waiting']);
 
   function updateBadgeUI(state, text) {
@@ -592,191 +566,10 @@
     }
   }
 
-  // === VOICE-TO-TRANSLATE (Push-to-Talk) ===
-  let voiceRecognition = null;
-  let isRecording = false;
-  let voiceTranscript = '';
-  let ctrlHeld = false;
-
-  function startVoiceRecording() {
-    if (!settings.voiceEnabled || !isEnabled) return;
-    if (isRecording) return;
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn('[ConFluent] 🎤 SpeechRecognition not supported');
-      updateBadgeUI('error');
-      setTimeout(() => updateBadgeUI('on'), 2000);
-      return;
-    }
-
-    voiceTranscript = '';
-    voiceRecognition = new SpeechRecognition();
-    voiceRecognition.continuous = true;
-    voiceRecognition.interimResults = true;
-    voiceRecognition.maxAlternatives = 1;
-    // Don't set lang — let the browser auto-detect
-
-    voiceRecognition.onstart = () => {
-      isRecording = true;
-      updateBadgeUI('recording');
-      console.log('%c🎤 Recording... (hold Ctrl, release to stop)', 'color: #ef4444; font-weight: bold');
-    };
-
-    voiceRecognition.onresult = (event) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
-        }
-      }
-      voiceTranscript = (finalTranscript || interimTranscript).trim();
-    };
-
-    voiceRecognition.onerror = (event) => {
-      console.warn('[ConFluent] 🎤 Voice error:', event.error);
-      isRecording = false;
-      ctrlHeld = false;
-      if (event.error === 'not-allowed') {
-        console.error('[ConFluent] ❌ Microphone permission denied. Allow mic access for this site.');
-      }
-      updateBadgeUI('error');
-      setTimeout(() => updateBadgeUI('on'), 2000);
-    };
-
-    voiceRecognition.onend = () => {
-      isRecording = false;
-      // If we have transcript, translate it
-      if (voiceTranscript) {
-        processVoiceTranscript(voiceTranscript);
-      } else {
-        updateBadgeUI('on');
-      }
-    };
-
-    try {
-      voiceRecognition.start();
-    } catch (e) {
-      console.error('[ConFluent] Failed to start voice:', e);
-      isRecording = false;
-      updateBadgeUI('error');
-      setTimeout(() => updateBadgeUI('on'), 2000);
-    }
-  }
-
-  function stopVoiceRecording() {
-    if (voiceRecognition && isRecording) {
-      try {
-        voiceRecognition.stop(); // stop() triggers onend which processes transcript
-      } catch {
-        voiceRecognition.abort();
-        isRecording = false;
-        updateBadgeUI('on');
-      }
-    }
-  }
-
-  function cancelVoiceRecording() {
-    if (voiceRecognition) {
-      voiceRecognition.abort();
-      voiceRecognition = null;
-    }
-    voiceTranscript = '';
-    isRecording = false;
-    ctrlHeld = false;
-    updateBadgeUI('on');
-  }
-
-  function processVoiceTranscript(text) {
-    if (!text || text.length < 1) {
-      updateBadgeUI('on');
-      return;
-    }
-
-    console.log(`%c🎤 Heard: "${text}"`, 'color: #3b82f6; font-weight: bold');
-    updateBadgeUI('working');
-
-    chrome.runtime.sendMessage(
-      { action: 'translate', text, targetLang: settings.targetLang },
-      async (res) => {
-        if (chrome.runtime.lastError) {
-          console.error('[ConFluent] Voice translate error:', chrome.runtime.lastError.message);
-          updateBadgeUI('error');
-          setTimeout(() => updateBadgeUI('on'), 2000);
-          return;
-        }
-
-        if (res?.translation) {
-          console.log(`%c🎤 Translated: "${res.translation}"`, 'color: #10b981; font-weight: bold');
-
-          // Copy to clipboard
-          try {
-            await navigator.clipboard.writeText(res.translation);
-            console.log('%c📋 Copied to clipboard! Paste with Cmd+V', 'color: #10b981; font-weight: bold');
-            updateBadgeUI('voice-done');
-            setTimeout(() => updateBadgeUI('on'), 2500);
-          } catch {
-            // Fallback
-            try {
-              const ta = document.createElement('textarea');
-              ta.value = res.translation;
-              ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
-              document.body.appendChild(ta);
-              ta.select();
-              document.execCommand('copy');
-              ta.remove();
-              updateBadgeUI('voice-done');
-              setTimeout(() => updateBadgeUI('on'), 2500);
-            } catch {
-              updateBadgeUI('error');
-              setTimeout(() => updateBadgeUI('on'), 2000);
-            }
-          }
-        } else {
-          updateBadgeUI('error');
-          setTimeout(() => updateBadgeUI('on'), 2000);
-        }
-      }
-    );
-  }
-
-  // === PUSH-TO-TALK: Hold Ctrl to record, release to stop ===
-  document.addEventListener('keydown', (e) => {
-    // Ctrl alone (no other modifiers, no repeat)
-    if (e.key === 'Control' && !e.repeat && !e.shiftKey && !e.altKey && !e.metaKey) {
-      ctrlHeld = true;
-      // Small delay to distinguish Ctrl-hold from Ctrl+shortcut
-      setTimeout(() => {
-        if (ctrlHeld && !isRecording) {
-          startVoiceRecording();
-        }
-      }, 300);
-    }
-    // If Ctrl is held with another key, it's a shortcut — cancel voice
-    if (ctrlHeld && e.key !== 'Control') {
-      ctrlHeld = false;
-      if (isRecording) {
-        cancelVoiceRecording();
-      }
-    }
-  }, true);
-
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'Control') {
-      ctrlHeld = false;
-      if (isRecording) {
-        stopVoiceRecording(); // Stop → triggers onend → translates → copies
-      }
-    }
-  }, true);
 
   // === CLEANUP ===
   function destroy() {
     stopConversationMode();
-    cancelVoiceRecording();
     document.removeEventListener('input', handleInput, true);
     badge?.parentNode?.removeChild(badge);
     window.__confluentRunning = false;
@@ -786,7 +579,7 @@
   function loadConfig() {
     try {
       chrome.storage.local.get(
-        ['delay', 'targetLang', 'enabled', 'triggerMode', 'conversationMode', 'myLang', 'theme', 'voiceEnabled'],
+        ['delay', 'targetLang', 'enabled', 'triggerMode', 'conversationMode', 'myLang', 'theme'],
         (c) => {
           if (chrome.runtime.lastError || !c) return;
 
@@ -797,7 +590,7 @@
           if (c.myLang) settings.myLang = c.myLang;
           if (c.theme) settings.theme = c.theme;
           if (c.enabled !== undefined) isEnabled = c.enabled;
-          if (c.voiceEnabled !== undefined) settings.voiceEnabled = c.voiceEnabled;
+
 
           updateBadgeUI(isEnabled ? 'on' : 'off');
           updateTheme(settings.theme);
@@ -827,7 +620,7 @@
         if (c.myLang) settings.myLang = c.myLang;
         if (c.theme) settings.theme = c.theme;
         if (c.enabled !== undefined) isEnabled = c.enabled;
-        if (c.voiceEnabled !== undefined) settings.voiceEnabled = c.voiceEnabled;
+
 
         updateBadgeUI(isEnabled ? 'on' : 'off');
         updateTheme(settings.theme);
@@ -847,9 +640,6 @@
         else stopConversationMode();
         return;
 
-      case 'startVoice':
-        startVoiceRecording();
-        return;
     }
   });
 

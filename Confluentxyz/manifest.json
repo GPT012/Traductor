@@ -41,14 +41,5 @@
     ],
     "background": {
         "service_worker": "background.js"
-    },
-    "commands": {
-        "voice-translate": {
-            "suggested_key": {
-                "default": "Alt+V",
-                "mac": "Alt+V"
-            },
-            "description": "Start voice-to-translate (speak and copy translation)"
-        }
     }
 }

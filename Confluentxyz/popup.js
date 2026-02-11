@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const elTriggerMode = $('triggerMode');
     const elConversationMode = $('conversationMode');
     const elMyLang = $('myLang');
-    const elVoiceEnabled = $('voiceEnabled');
     const elThemeToggle = $('theme-toggle');
     const elStatus = $('status');
     const elConversationContainer = $('conversationSettings');
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === LOAD CONFIG ===
     chrome.storage.local.get(
-        ['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang', 'theme', 'voiceEnabled'],
+        ['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang', 'theme'],
         (c) => {
             if (chrome.runtime.lastError || !c) return;
 
@@ -40,8 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (c.conversationMode) elConversationMode.checked = true;
             if (c.myLang) elMyLang.value = c.myLang;
             if (c.theme === 'dark') document.body.classList.add('dark-mode');
-            if (c.voiceEnabled !== undefined) elVoiceEnabled.checked = c.voiceEnabled;
-            else elVoiceEnabled.checked = true; // default on
 
             updateVisibility();
         }
@@ -58,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 delay: parseInt(elDelay.value),
                 conversationMode: elConversationMode.checked,
                 myLang: elMyLang.value,
-                voiceEnabled: elVoiceEnabled.checked,
                 theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
             };
 
@@ -89,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === EVENT LISTENERS ===
-    const inputs = [elEnabled, elTargetLang, elTriggerMode, elDelay, elConversationMode, elMyLang, elVoiceEnabled];
+    const inputs = [elEnabled, elTargetLang, elTriggerMode, elDelay, elConversationMode, elMyLang];
     for (const input of inputs) {
         if (input) input.addEventListener('change', saveConfig);
     }
