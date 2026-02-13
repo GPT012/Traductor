@@ -249,6 +249,63 @@ body.dark-mode .fluent-icon {
     transition: all 0.3s ease;
 }
 
+/* === FLAG SELECTOR === */
+.flag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 4px 0;
+    animation: flagsSlideIn 0.3s ease forwards;
+}
+
+@keyframes flagsSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.flag-btn {
+    width: 28px;
+    height: 28px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--input-bg);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.flag-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+    background: var(--border);
+}
+
+.flag-btn.active {
+    opacity: 1;
+    transform: scale(1.15);
+    border-color: var(--primary);
+    background: var(--surface);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
+}
+
+.flag-btn:active {
+    transform: scale(0.95);
+}
+
 /* === FORM ELEMENTS === */
 .section {
     display: flex;

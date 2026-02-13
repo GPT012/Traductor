@@ -200,6 +200,13 @@
     if (!badge?.isConnected) return;
     badge.classList.remove(...BADGE_STATES);
 
+    // Hide sphere when disabled, show when active
+    if (state === 'off') {
+      badge.style.setProperty('display', 'none', 'important');
+    } else {
+      badge.style.setProperty('display', 'flex', 'important');
+    }
+
     if (WORKING_STATES.has(state)) {
       badge.classList.add('state-working');
       badge.title = text || 'Translating...';
@@ -230,8 +237,10 @@
     chrome.storage.local.set({ enabled: isEnabled });
   }
 
-  badge.onclick = (e) => { if (e.detail === 1) toggle(); };
-  badge.ondblclick = (e) => e.preventDefault();
+  badge.ondblclick = (e) => {
+    e.preventDefault();
+    toggle();
+  };
 
   // === INPUT FIELD DETECTION ===
   function findActiveEditor() {
