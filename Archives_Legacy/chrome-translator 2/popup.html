@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(30, 41, 59, 0.7);
+    }
+
+    body {
+      width: 260px;
+      padding: 0;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header & Toggle */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.active {
+      background: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    /* Minimalist Toggle */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--surface);
+      transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--text-muted);
+      transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(16px);
+      background-color: white;
+    }
+
+    /* Form Elements */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      appearance: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    select:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    /* Save Button */
+    button {
+      width: 100%;
+      padding: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+
+    button:hover {
+      background: var(--surface-hover);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Toast */
+    #status {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #10b981;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    #status.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>
+        <div id="connection-dot" class="status-dot"></div>
+        Auto Translator
+      </h2>
+      <label class="switch">
+        <input type="checkbox" id="enabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="section">
+      <label>Target Language</label>
+      <div class="select-wrapper">
+        <select id="targetLang">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="es">Espagnol</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Português</option>
+          <option value="ru">Русский</option>
+          <option value="ja">日本語</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+        </select>
+        <div class="select-arrow">▼</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <label>Trigger Mode (Writing)</label>
+      <div class="select-wrapper">
+        <select id="triggerMode">
+          <option value="timer">Standard (Timer)</option>
+          <option value="rapid">⚡ Rapid (Instant)</option>
+          <option value="pro">📧 Pro (Sentence End)</option>
+        </select>
+        <div class="select-arrow">▼</div>
+      </div>
+    </div>
+
+    <!-- Conversation Mode -->
+    <div class="header"
+      style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); border-bottom: none;">
+      <h2>
+        <span>🗣️ Conversation</span>
+      </h2>
+      <label class="switch">
+        <input type="checkbox" id="conversationMode">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="section" id="myLang-container" style="display: none;">
+      <label>My Language (Reading)</label>
+      <div class="select-wrapper">
+        <select id="myLang">
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+          <option value="es">Espagnol</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Português</option>
+          <option value="ru">Русский</option>
+          <option value="ja">日本語</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+        </select>
+        <div class="select-arrow">▼</div>
+      </div>
+
+      <button id="translatePage"
+        style="margin-top: 12px; background: var(--surface-hover); border-color: var(--primary);">
+        🌍 Translate Page Now
+      </button>
+    </div>
+
+    <div class="section" id="delay-container">
+      <label>Typing Delay</label>
+      <div class="select-wrapper">
+        <select id="delay">
+          <option value="500">Fast (0.5s)</option>
+          <option value="1000">Normal (1s)</option>
+          <option value="1500">Relaxed (1.5s)</option>
+          <option value="2000">Safe (2s)</option>
+        </select>
+        <div class="select-arrow">▼</div>
+      </div>
+    </div>
+
+    <!-- Hidden save button, auto-save logic in JS -->
+  </div>
+
+  <div id="status">Saved</div>
+
+  <script src="browser-polyfill.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>

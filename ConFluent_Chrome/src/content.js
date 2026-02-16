@@ -7,11 +7,12 @@
 (function () {
   'use strict';
 
-  // === SINGLETON GUARD ===
+  // === SINGLETON GUARD & IFRAME BLOCK ===
+  if (window.self !== window.top) return; // Prevent running in iframes
   if (window.__confluentRunning) return;
   window.__confluentRunning = true;
 
-  console.log('%c🌐 ConFluent v3.0', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
+  console.log('%c🌐 ConFluent v3.1', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
 
   // === STATE ===
   let isEnabled = true;
@@ -652,13 +653,60 @@
     }
   });
 
+  // === SPA URL CHANGE DETECTION ===
+  let lastUrl = location.href;
+
+  function onUrlChange() {
+    const currentUrl = location.href;
+    if (currentUrl === lastUrl) return;
+    lastUrl = currentUrl;
+
+    // Reset translation state
+    isTranslating = false;
+    originalText = '';
+    lastTranslated = '';
+    clearTimeout(typingTimer);
+    translationGeneration++;
+
+    // Reinitialize conversation mode if active
+    if (isEnabled && settings.conversationMode) {
+      stopConversationMode();
+      setTimeout(() => startConversationMode(), 300);
+    }
+
+    updateBadgeUI(isEnabled ? 'on' : 'off');
+  }
+
+  // Hook into History API (SPA navigation: Discord, Twitter, WhatsApp Web, etc.)
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function (...args) {
+    originalPushState.apply(this, args);
+    onUrlChange();
+  };
+
+  history.replaceState = function (...args) {
+    originalReplaceState.apply(this, args);
+    onUrlChange();
+  };
+
+  window.addEventListener('popstate', onUrlChange);
+  window.addEventListener('hashchange', onUrlChange);
+
   // === INIT ===
   function init() {
+    if (window.self !== window.top) return;
+
+    // Remove any existing badge to prevent duplicates
+    const existingBadge = document.getElementById('tr-badge');
+    if (existingBadge) existingBadge.remove();
+
     if (document.getElementById('tr-styles')) return;
     (document.head || document.documentElement).appendChild(style);
     (document.body || document.documentElement).appendChild(badge);
     loadConfig();
-    console.log('🌐 ConFluent v3.0 | Ready');
+    console.log('🌐 ConFluent v3.1 | Ready');
   }
 
   if (document.readyState === 'complete') init();
