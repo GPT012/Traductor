@@ -370,20 +370,40 @@
         const SUPABASE_URL = 'https://iisjgbmhlgpnzqoaevml.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9';
 
-        // If already logged in, send data to extension then redirect
+        // If already logged in, sync to extension then redirect
         const existingUser = localStorage.getItem('confluent_user');
         if (existingUser) {
-            try {
-                const user = JSON.parse(existingUser);
-                // Send to extension content script so it saves to chrome.storage
-                window.postMessage({
-                    type: 'CONFLUENT_AUTH',
-                    user: user,
-                    settings: user.settings || null
-                }, window.location.origin);
-            } catch (e) {}
-            // Wait for content script to process, then redirect
-            setTimeout(() => { window.location.href = '/'; }, 800);
+            let userData;
+            try { userData = JSON.parse(existingUser); } catch (e) { }
+
+            if (userData) {
+                // Listen for confirmation from content script
+                let sender;
+                window.addEventListener('message', (e) => {
+                    if (e.data?.type === 'CONFLUENT_AUTH_OK') {
+                        clearInterval(sender);
+                        window.location.href = '/';
+                    }
+                });
+
+                // Retry sending postMessage — content script injects at document_end
+                // which may happen AFTER this inline script runs
+                let attempts = 0;
+                sender = setInterval(() => {
+                    window.postMessage({
+                        type: 'CONFLUENT_AUTH',
+                        user: userData,
+                        settings: userData.settings || null
+                    }, window.location.origin);
+                    attempts++;
+                    if (attempts >= 10) {
+                        clearInterval(sender);
+                        window.location.href = '/';
+                    }
+                }, 200);
+            } else {
+                window.location.href = '/';
+            }
         }
 
         async function syncWithSupabase(user) {
@@ -458,7 +478,7 @@
 
                     // SYNC WITH SUPABASE
                     const settings = await syncWithSupabase(user);
-                    
+
                     // Add settings to user object for storage
                     user.settings = settings;
 

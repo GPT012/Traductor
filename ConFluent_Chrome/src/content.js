@@ -19,13 +19,14 @@
 
   // === WEB AUTH LISTENER ===
   // Listens for login data from confluents.xyz login page
+  let authReceived = false;
   window.addEventListener('message', (event) => {
     if (event.origin !== 'https://www.confluents.xyz' && event.origin !== 'https://confluents.xyz') return;
-    if (event.data?.type === 'CONFLUENT_AUTH') {
+    if (event.data?.type === 'CONFLUENT_AUTH' && !authReceived) {
       const user = event.data.user;
       const settings = event.data.settings;
       if (user && user.email) {
-        // Build the full storage object
+        authReceived = true;
         const storageData = { user };
         if (settings) {
           Object.assign(storageData, settings);
@@ -33,6 +34,8 @@
 
         chrome.storage.local.set(storageData, () => {
           if (DEBUG) console.log('🔐 ConFluent: Logged in and synced as', user.name);
+          // Tell the page we got the data
+          window.postMessage({ type: 'CONFLUENT_AUTH_OK' }, event.origin);
         });
       }
     }
