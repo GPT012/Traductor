@@ -1,7 +1,5 @@
-// Popup Controller — ConFluent v3.2 (Web Auth)
+// Popup Controller — ConFluent v3.2
 'use strict';
-
-const LOGIN_URL = 'https://www.confluents.xyz/login.html';
 
 document.addEventListener('DOMContentLoaded', () => {
     // === DOM REFERENCES ===
@@ -60,12 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             selectFlag(currentMyLang);
             updateVisibility();
 
-            // Check auth: if no user, redirect to website login
+            // Show profile if logged in (no redirect if not)
             if (c.user) {
                 showProfile(c.user);
-            } else {
-                // First launch — redirect to login page
-                chrome.tabs.create({ url: LOGIN_URL });
             }
         }
     );
@@ -87,6 +82,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // === SYNC TO SUPABASE ===
+    async function syncToSupabase(settings) {
+        chrome.storage.local.get(['user'], async (res) => {
+            if (res.user && res.user.email) {
+                try {
+                    await fetch('https://iisjgbmhlgpnzqoaevml.supabase.co/rest/v1/profiles?email=eq.' + res.user.email, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': 'sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9',
+                            'Authorization': 'Bearer sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9',
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            settings: settings,
+                            updated_at: new Date().toISOString()
+                        })
+                    });
+                } catch (e) {
+                    console.error('Remote sync failed:', e);
+                }
+            }
+        });
+    }
+
     // === SAVE CONFIG (debounced) ===
     function saveConfig() {
         clearTimeout(saveTimer);
@@ -102,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             chrome.storage.local.set(config);
+            syncToSupabase(config); // Push to Supabase
 
             // Broadcast to all tabs
             chrome.tabs.query({}, (tabs) => {

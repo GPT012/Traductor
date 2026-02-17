@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "ConFluent",
-    "version": "2.0.0",
+    "version": "3.2.0",
     "description": "Auto-translate what you type — 100% FREE | Traduit automatiquement ce que vous tapez — GRATUIT",
     "permissions": [
         "storage",
@@ -11,8 +11,7 @@
         "clipboardWrite"
     ],
     "host_permissions": [
-        "https://translate.googleapis.com/*",
-        "<all_urls>"
+        "https://translate.googleapis.com/*"
     ],
     "action": {
         "default_popup": "popup.html",

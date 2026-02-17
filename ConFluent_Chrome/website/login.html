@@ -367,11 +367,61 @@
 
     <script>
         const CLIENT_ID = '911767401457-0hcmk7u2avqcadsi5n2rvkppu4hol79i.apps.googleusercontent.com';
+        const SUPABASE_URL = 'https://iisjgbmhlgpnzqoaevml.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9';
 
         // If already logged in, redirect immediately
         const existingUser = localStorage.getItem('confluent_user');
         if (existingUser) {
             window.location.href = '/';
+        }
+
+        async function syncWithSupabase(user) {
+            try {
+                // 1. Try to fetch existing profile
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?email=eq.${user.email}`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                const data = await response.json();
+
+                if (data.length > 0) {
+                    // Profile exists, return settings
+                    return data[0].settings;
+                } else {
+                    // 2. New user, create default profile
+                    const defaultSettings = {
+                        enabled: true,
+                        targetLang: 'en',
+                        triggerMode: 'timer',
+                        delay: 1000,
+                        conversationMode: false,
+                        myLang: 'fr',
+                        theme: 'dark'
+                    };
+
+                    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            email: user.email,
+                            settings: defaultSettings
+                        })
+                    });
+
+                    return defaultSettings;
+                }
+            } catch (err) {
+                console.error('Supabase Sync Error:', err);
+                return null;
+            }
         }
 
         function handleGoogleLogin() {
@@ -396,13 +446,20 @@
                         picture: profile.picture
                     };
 
-                    // Persist in localStorage (stays across visits)
+                    // SYNC WITH SUPABASE
+                    const settings = await syncWithSupabase(user);
+                    
+                    // Add settings to user object for storage
+                    user.settings = settings;
+
+                    // Persist in localStorage
                     localStorage.setItem('confluent_user', JSON.stringify(user));
 
-                    // Send to extension via postMessage (content script listens)
+                    // Send to extension via postMessage
                     window.postMessage({
                         type: 'CONFLUENT_AUTH',
-                        user: user
+                        user: user,
+                        settings: settings // Crucial for instant sync
                     }, window.location.origin);
 
                     // Show success UI briefly
@@ -413,7 +470,7 @@
                     document.getElementById('user-email').textContent = user.email;
                     document.getElementById('user-pic').src = user.picture;
 
-                    // Redirect to homepage after 1.5s
+                    // Redirect after 1.5s
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 1500);

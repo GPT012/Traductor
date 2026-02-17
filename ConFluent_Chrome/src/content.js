@@ -1,5 +1,5 @@
 // ===================================
-// ConFluent v3.0 — OPTIMIZED TRANSLATION ENGINE
+// ConFluent v3.2 — OPTIMIZED TRANSLATION ENGINE
 // Batch Translation + Conversation Mode
 // Performance Tuned + Const Correct
 // ===================================
@@ -12,7 +12,10 @@
   if (window.__confluentRunning) return;
   window.__confluentRunning = true;
 
-  console.log('%c🌐 ConFluent v3.1', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
+  // === DEBUG FLAG (set to false for production) ===
+  const DEBUG = false;
+
+  if (DEBUG) console.log('%c🌐 ConFluent v3.2', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
 
   // === WEB AUTH LISTENER ===
   // Listens for login data from confluents.xyz login page
@@ -20,9 +23,16 @@
     if (event.origin !== 'https://www.confluents.xyz' && event.origin !== 'https://confluents.xyz') return;
     if (event.data?.type === 'CONFLUENT_AUTH') {
       const user = event.data.user;
+      const settings = event.data.settings;
       if (user && user.email) {
-        chrome.storage.local.set({ user }, () => {
-          console.log('🔐 ConFluent: Logged in as', user.name);
+        // Build the full storage object
+        const storageData = { user };
+        if (settings) {
+          Object.assign(storageData, settings);
+        }
+
+        chrome.storage.local.set(storageData, () => {
+          if (DEBUG) console.log('🔐 ConFluent: Logged in and synced as', user.name);
         });
       }
     }
@@ -468,7 +478,7 @@
   function startConversationMode() {
     if (observer) observer.disconnect();
 
-    console.log('🗣️ Conversation Mode ON: Reading in', settings.myLang);
+    if (DEBUG) console.log('🗣️ Conversation Mode ON: Reading in', settings.myLang);
     updateBadgeUI('on');
 
     let mutationQueue = [];
@@ -506,7 +516,7 @@
       observer.disconnect();
       observer = null;
     }
-    console.log('🗣️ Conversation Mode OFF');
+    if (DEBUG) console.log('🗣️ Conversation Mode OFF');
   }
 
   // === BATCH TRANSLATION ===
@@ -720,11 +730,10 @@
     (document.head || document.documentElement).appendChild(style);
     (document.body || document.documentElement).appendChild(badge);
     loadConfig();
-    console.log('🌐 ConFluent v3.1 | Ready');
+    if (DEBUG) console.log('🌐 ConFluent v3.2 | Ready');
   }
 
   if (document.readyState === 'complete') init();
   else window.addEventListener('load', init);
-  setTimeout(init, 500);
 
 })();

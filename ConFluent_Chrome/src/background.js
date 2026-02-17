@@ -1,7 +1,9 @@
-// Background Service Worker - ConFluent v3.0 (Optimized)
+// Background Service Worker - ConFluent v3.2 (Optimized)
 // Google Translate FREE + Translation Cache + Self-Healing
 
 'use strict';
+
+const DEBUG = false;
 
 const DEFAULT_CONFIG = {
     targetLang: 'en',
@@ -152,7 +154,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // === SELF-HEALING: Inject on install/update ===
 chrome.runtime.onInstalled.addListener(async () => {
-    console.log('[ConFluent] 🔄 Install/Update — Injecting into open tabs...');
+    if (DEBUG) console.log('[ConFluent] 🔄 Install/Update — Injecting into open tabs...');
     const manifest = chrome.runtime.getManifest();
     for (const cs of manifest.content_scripts) {
         const tabs = await chrome.tabs.query({ url: cs.matches });
@@ -177,7 +179,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
         try {
             await chrome.tabs.sendMessage(tabId, { action: 'ping' });
         } catch {
-            console.log('[ConFluent] 🚑 Tab missing script, injecting...', tab.url);
+            if (DEBUG) console.log('[ConFluent] 🚑 Tab missing script, injecting...', tab.url);
             try {
                 await chrome.scripting.executeScript({
                     target: { tabId, allFrames: true },
@@ -188,4 +190,4 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
     } catch (_) { }
 });
 
-console.log('[ConFluent] ✅ Service Worker v3.0 (Cache + Dedup)');
+if (DEBUG) console.log('[ConFluent] ✅ Service Worker v3.2 (Cache + Dedup)');
