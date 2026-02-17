@@ -1043,6 +1043,36 @@
             background: rgba(79, 110, 247, 0.08);
         }
 
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px 5px 5px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .nav-user:hover {
+            border-color: var(--primary);
+            background: rgba(79, 110, 247, 0.08);
+        }
+
+        .nav-user img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+        }
+
+        .nav-user span {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
         .nav-hamburger {
             display: none;
             background: none;
@@ -1328,7 +1358,11 @@
             <a href="#platforms">Platforms</a>
             <a href="#faq">FAQ</a>
             <a href="privacy.html">Privacy</a>
-            <a href="login.html" class="nav-signin">Sign In</a>
+            <a href="login.html" class="nav-signin" id="nav-signin-desktop">Sign In</a>
+            <div class="nav-user" id="nav-user-desktop" style="display:none;" onclick="navLogout()">
+                <img id="nav-avatar-desktop" src="" alt="">
+                <span id="nav-name-desktop"></span>
+            </div>
             <a href="#" class="nav-cta">Add to Chrome</a>
         </div>
         <button class="nav-hamburger" onclick="document.getElementById('nav-mobile').classList.toggle('open')"
@@ -1343,7 +1377,12 @@
         <a href="#platforms" onclick="this.parentElement.classList.remove('open')">Platforms</a>
         <a href="#faq" onclick="this.parentElement.classList.remove('open')">FAQ</a>
         <a href="privacy.html">Privacy</a>
-        <a href="login.html" class="nav-signin" style="text-align:center;display:block;">Sign In</a>
+        <a href="login.html" class="nav-signin" id="nav-signin-mobile" style="text-align:center;display:block;">Sign
+            In</a>
+        <div class="nav-user" id="nav-user-mobile" style="display:none;justify-content:center;" onclick="navLogout()">
+            <img id="nav-avatar-mobile" src="" alt="">
+            <span id="nav-name-mobile"></span>
+        </div>
         <a href="#" class="nav-cta" style="text-align:center;display:block;">Add to Chrome</a>
     </div>
 
@@ -1777,6 +1816,42 @@
         window.addEventListener('scroll', () => {
             document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
         });
+    </script>
+
+    <!-- Auth-aware navbar -->
+    <script>
+        (function () {
+            const raw = localStorage.getItem('confluent_user');
+            if (!raw) return;
+            try {
+                const user = JSON.parse(raw);
+                // Desktop
+                const signinD = document.getElementById('nav-signin-desktop');
+                const userD = document.getElementById('nav-user-desktop');
+                if (signinD) signinD.style.display = 'none';
+                if (userD) {
+                    userD.style.display = 'flex';
+                    document.getElementById('nav-avatar-desktop').src = user.picture;
+                    document.getElementById('nav-name-desktop').textContent = user.name.split(' ')[0];
+                }
+                // Mobile
+                const signinM = document.getElementById('nav-signin-mobile');
+                const userM = document.getElementById('nav-user-mobile');
+                if (signinM) signinM.style.display = 'none';
+                if (userM) {
+                    userM.style.display = 'flex';
+                    document.getElementById('nav-avatar-mobile').src = user.picture;
+                    document.getElementById('nav-name-mobile').textContent = user.name.split(' ')[0];
+                }
+            } catch (e) { }
+        })();
+
+        function navLogout() {
+            if (confirm('Sign out of ConFluent?')) {
+                localStorage.removeItem('confluent_user');
+                location.reload();
+            }
+        }
     </script>
 </body>
 
