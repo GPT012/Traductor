@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — ConFluent</title>
+
+    <!-- FONTS -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- GOOGLE IDENTITY SERVICES -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        :root {
+            --bg: #070b14;
+            --surface: #0f1729;
+            --text: #f0f4ff;
+            --text-muted: #7a8baa;
+            --primary: #4f6ef7;
+            --border: #1c2a4a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(79, 110, 247, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes bgShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, -3%); }
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Logo */
+        .logo-orb {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #4f6ef7, #2a1f6e);
+            margin: 0 auto 24px;
+            box-shadow: 0 0 40px rgba(79, 110, 247, 0.3), inset -3px -3px 8px rgba(0,0,0,0.4), inset 3px 3px 8px rgba(255,255,255,0.1);
+            animation: orbFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .brand-title {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .brand-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        /* Login Card */
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .login-card h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 28px;
+        }
+
+        /* Google Button */
+        .google-signin-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 14px 24px;
+            background: #fff;
+            color: #1f1f1f;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .google-signin-btn:hover {
+            background: #f1f3f4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .google-signin-btn svg {
+            flex-shrink: 0;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Trust */
+        .trust-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .trust-item .check {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Success State */
+        .success-state {
+            display: none;
+            text-align: center;
+        }
+
+        .success-state .checkmark {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .success-state h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .success-state p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+            padding: 12px 16px;
+            background: rgba(79, 110, 247, 0.08);
+            border: 1px solid rgba(79, 110, 247, 0.2);
+            border-radius: 12px;
+        }
+
+        .user-card img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        .user-card-info {
+            text-align: left;
+        }
+
+        .user-card-info .name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-card-info .email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .close-hint {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 16px;
+        }
+
+        /* Footer */
+        .login-footer {
+            margin-top: 32px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <!-- Brand -->
+        <div class="logo-orb"></div>
+        <h1 class="brand-title">ConFluent</h1>
+        <p class="brand-subtitle">Sign in to sync your translating preferences across devices.</p>
+
+        <!-- Login Card -->
+        <div class="login-card" id="login-card">
+            <h2>Welcome</h2>
+            <p>Sign in with your Google account to get started.</p>
+
+            <button class="google-signin-btn" id="google-btn" onclick="handleGoogleLogin()">
+                <svg width="20" height="20" viewBox="0 0 18 18">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285f4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34a853"/>
+                    <path d="M3.964 10.711a5.41 5.41 0 0 1 0-3.422V4.957H.957a8.991 8.991 0 0 0 0 8.086l3.007-2.332z" fill="#fbbc05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.957L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#ea4335"/>
+                </svg>
+                Sign in with Google
+            </button>
+
+            <div class="divider">Secure & Private</div>
+
+            <div class="trust-items">
+                <div class="trust-item">
+                    <span class="check">✓</span>
+                    <span>We never store your password</span>
+                </div>
+                <div class="trust-item">
+                    <span class="check">✓</span>
+                    <span>Only your name and email are saved</span>
+                </div>
+                <div class="trust-item">
+                    <span class="check">✓</span>
+                    <span>You can sign out anytime from the extension</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success State (shown after login) -->
+        <div class="login-card success-state" id="success-state">
+            <div class="checkmark">✓</div>
+            <h2>You're in!</h2>
+            <p>Your ConFluent extension is now connected.</p>
+            <div class="user-card" id="user-card">
+                <img id="user-pic" src="" alt="">
+                <div class="user-card-info">
+                    <div class="name" id="user-name"></div>
+                    <div class="email" id="user-email"></div>
+                </div>
+            </div>
+            <p class="close-hint">You can close this tab and return to the extension.</p>
+        </div>
+
+        <p class="login-footer">
+            By signing in, you agree to our <a href="privacy.html">Privacy Policy</a>.
+        </p>
+    </div>
+
+    <script>
+        const CLIENT_ID = '911767401457-0hcmk7u2avqcadsi5n2rvkppu4hol79i.apps.googleusercontent.com';
+
+        function handleGoogleLogin() {
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'email profile',
+                callback: async (response) => {
+                    if (response.error) {
+                        console.error('Google Auth Error:', response.error);
+                        return;
+                    }
+
+                    // Fetch user profile from Google
+                    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { Authorization: `Bearer ${response.access_token}` }
+                    });
+                    const profile = await res.json();
+
+                    const user = {
+                        name: profile.name,
+                        email: profile.email,
+                        picture: profile.picture
+                    };
+
+                    // Send to extension via postMessage (content script listens)
+                    window.postMessage({
+                        type: 'CONFLUENT_AUTH',
+                        user: user
+                    }, window.location.origin);
+
+                    // Show success UI
+                    document.getElementById('login-card').style.display = 'none';
+                    const successEl = document.getElementById('success-state');
+                    successEl.style.display = 'block';
+                    document.getElementById('user-name').textContent = user.name;
+                    document.getElementById('user-email').textContent = user.email;
+                    document.getElementById('user-pic').src = user.picture;
+                }
+            });
+
+            client.requestAccessToken();
+        }
+    </script>
+</body>
+
+</html>
