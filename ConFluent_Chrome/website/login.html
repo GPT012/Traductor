@@ -370,10 +370,20 @@
         const SUPABASE_URL = 'https://iisjgbmhlgpnzqoaevml.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9';
 
-        // If already logged in, redirect immediately
+        // If already logged in, send data to extension then redirect
         const existingUser = localStorage.getItem('confluent_user');
         if (existingUser) {
-            window.location.href = '/';
+            try {
+                const user = JSON.parse(existingUser);
+                // Send to extension content script so it saves to chrome.storage
+                window.postMessage({
+                    type: 'CONFLUENT_AUTH',
+                    user: user,
+                    settings: user.settings || null
+                }, window.location.origin);
+            } catch (e) {}
+            // Wait for content script to process, then redirect
+            setTimeout(() => { window.location.href = '/'; }, 800);
         }
 
         async function syncWithSupabase(user) {
