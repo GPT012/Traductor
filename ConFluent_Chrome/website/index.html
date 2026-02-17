@@ -1028,6 +1028,21 @@
             box-shadow: 0 4px 20px var(--primary-glow);
         }
 
+        .nav-signin {
+            padding: 7px 18px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            color: var(--text) !important;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-signin:hover {
+            border-color: var(--primary);
+            background: rgba(79, 110, 247, 0.08);
+        }
+
         .nav-hamburger {
             display: none;
             background: none;
@@ -1313,6 +1328,7 @@
             <a href="#platforms">Platforms</a>
             <a href="#faq">FAQ</a>
             <a href="privacy.html">Privacy</a>
+            <a href="login.html" class="nav-signin">Sign In</a>
             <a href="#" class="nav-cta">Add to Chrome</a>
         </div>
         <button class="nav-hamburger" onclick="document.getElementById('nav-mobile').classList.toggle('open')"
@@ -1327,6 +1343,7 @@
         <a href="#platforms" onclick="this.parentElement.classList.remove('open')">Platforms</a>
         <a href="#faq" onclick="this.parentElement.classList.remove('open')">FAQ</a>
         <a href="privacy.html">Privacy</a>
+        <a href="login.html" class="nav-signin" style="text-align:center;display:block;">Sign In</a>
         <a href="#" class="nav-cta" style="text-align:center;display:block;">Add to Chrome</a>
     </div>
 
