@@ -14,6 +14,20 @@
 
   console.log('%c🌐 ConFluent v3.1', 'background: #000; color: white; padding: 6px 12px; border-radius: 999px;');
 
+  // === WEB AUTH LISTENER ===
+  // Listens for login data from confluents.xyz login page
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://www.confluents.xyz' && event.origin !== 'https://confluents.xyz') return;
+    if (event.data?.type === 'CONFLUENT_AUTH') {
+      const user = event.data.user;
+      if (user && user.email) {
+        chrome.storage.local.set({ user }, () => {
+          console.log('🔐 ConFluent: Logged in as', user.name);
+        });
+      }
+    }
+  });
+
   // === STATE ===
   let isEnabled = true;
   let isTranslating = false;

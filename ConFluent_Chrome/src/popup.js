@@ -1,5 +1,7 @@
-// Popup Controller — ConFluent v3.1 (Flag Selector)
+// Popup Controller — ConFluent v3.2 (Web Auth)
 'use strict';
+
+const LOGIN_URL = 'https://www.confluents.xyz/login.html';
 
 document.addEventListener('DOMContentLoaded', () => {
     // === DOM REFERENCES ===
@@ -13,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const elThemeToggle = $('theme-toggle');
     const elStatus = $('status');
     const elDelayContainer = $('delay-container');
+    const elProfileBar = $('profile-bar');
+    const elUserName = $('user-name');
+    const elUserAvatar = $('user-avatar');
+    const elLogoutBtn = $('logout-btn');
     const flagBtns = document.querySelectorAll('.flag-btn');
 
     // Current myLang value
@@ -39,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === LOAD CONFIG ===
     chrome.storage.local.get(
-        ['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang', 'theme'],
+        ['enabled', 'targetLang', 'delay', 'triggerMode', 'conversationMode', 'myLang', 'theme', 'user'],
         (c) => {
             if (chrome.runtime.lastError || !c) return;
 
@@ -53,8 +59,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             selectFlag(currentMyLang);
             updateVisibility();
+
+            // Check auth: if no user, redirect to website login
+            if (c.user) {
+                showProfile(c.user);
+            } else {
+                // First launch — redirect to login page
+                chrome.tabs.create({ url: LOGIN_URL });
+            }
         }
     );
+
+    // === PROFILE DISPLAY ===
+    function showProfile(user) {
+        if (elProfileBar && user) {
+            elProfileBar.style.display = 'flex';
+            elUserName.textContent = user.name || user.email || 'User';
+            elUserAvatar.src = user.picture || '';
+        }
+    }
+
+    // === LOGOUT ===
+    function logout() {
+        chrome.storage.local.remove('user', () => {
+            elProfileBar.style.display = 'none';
+            showToast('Signed out');
+        });
+    }
 
     // === SAVE CONFIG (debounced) ===
     function saveConfig() {
@@ -119,4 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('dark-mode');
         saveConfig();
     });
+
+    // === LOGOUT ===
+    elLogoutBtn?.addEventListener('click', logout);
 });
