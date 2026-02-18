@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://www.confluents.xyz/dashboard.html">
+    <title>My Account — ConFluent</title>
+
+    <!-- FONTS -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #070b14;
+            --surface: #0f1729;
+            --surface-2: #162040;
+            --text: #f0f4ff;
+            --text-muted: #7a8baa;
+            --primary: #4f6ef7;
+            --primary-glow: rgba(79, 110, 247, 0.15);
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.15);
+            --border: #1c2a4a;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gradient-1: linear-gradient(135deg, #4f6ef7, #8b5cf6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(79, 110, 247, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        /* NAV */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(7, 11, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(28, 42, 74, 0.5);
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        /* MAIN */
+        .dashboard {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+
+        .dashboard h1 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+
+        /* ACCOUNT CARD */
+        .account-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .account-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .account-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .account-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        .account-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .account-email {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: var(--accent-glow);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent);
+        }
+
+        .status-badge.trial {
+            background: var(--primary-glow);
+            border: 1px solid rgba(79, 110, 247, 0.3);
+            color: var(--primary);
+        }
+
+        .status-badge.expired {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* SUBSCRIPTION INFO */
+        .sub-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .sub-info-item {
+            padding: 16px;
+            background: var(--surface-2);
+            border-radius: 12px;
+        }
+
+        .sub-info-item .label {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sub-info-item .value {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* UPGRADE BUTTON */
+        .upgrade-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: var(--gradient-1);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 110, 247, 0.3);
+        }
+
+        /* NO LOGIN */
+        .no-login {
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .no-login h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .no-login p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* TRANSACTIONS TABLE */
+        .section-title {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .transactions-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(28, 42, 74, 0.3);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(79, 110, 247, 0.03);
+        }
+
+        .tx-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tx-status.succeeded {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .tx-status.failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .tx-status.refunded {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        /* FOOTER */
+        .footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .account-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAV -->
+    <nav class="nav">
+        <a href="/" class="nav-brand">ConFluent</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pricing.html">Pricing</a>
+            <a href="/dashboard.html">My Account</a>
+        </div>
+    </nav>
+
+    <div class="dashboard" id="dashboard">
+        <!-- Filled by JS -->
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 ConFluent — <a href="/privacy.html">Privacy Policy</a></p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://iisjgbmhlgpnzqoaevml.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_IHrNdjkpayFqGnp_5jGw6g_MLenBeW9';
+
+        function getUser() {
+            try {
+                const raw = localStorage.getItem('confluent_user');
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function formatDate(iso) {
+            return new Date(iso).toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            });
+        }
+
+        function formatAmount(cents, currency) {
+            return new Intl.NumberFormat('en-EU', {
+                style: 'currency',
+                currency: currency || 'eur'
+            }).format(cents / 100);
+        }
+
+        async function loadDashboard() {
+            const container = document.getElementById('dashboard');
+            const user = getUser();
+
+            if (!user || !user.email) {
+                container.innerHTML = `
+                    <div class="no-login">
+                        <h2>Sign in to view your account</h2>
+                        <p>Log in with your Google account to see your subscription and payment history.</p>
+                        <a href="/login.html" class="upgrade-btn">Sign In</a>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `<h1>My Account</h1><p style="color:var(--text-muted)">Loading...</p>`;
+
+            try {
+                // Fetch profile
+                const profileRes = await fetch(
+                    `${SUPABASE_URL}/rest/v1/profiles?email=eq.${user.email}&select=*`,
+                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                );
+                const profiles = await profileRes.json();
+                const profile = profiles[0] || null;
+
+                // Fetch subscription
+                const subRes = await fetch(
+                    `${SUPABASE_URL}/rest/v1/subscriptions?email=eq.${user.email}&status=eq.active&order=created_at.desc&limit=1`,
+                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                );
+                const subs = await subRes.json();
+                const activeSub = subs[0] || null;
+
+                // Fetch transactions
+                const txRes = await fetch(
+                    `${SUPABASE_URL}/rest/v1/transactions?email=eq.${user.email}&order=created_at.desc&limit=20`,
+                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                );
+                const transactions = await txRes.json();
+
+                // Determine status
+                const now = new Date();
+                const trialEnd = profile ? new Date(profile.trial_end) : null;
+                const inTrial = trialEnd && trialEnd > now;
+                const hasActiveSub = !!activeSub;
+
+                let statusHTML, statusClass;
+                if (hasActiveSub) {
+                    statusHTML = `<span class="dot"></span> Active — ${activeSub.plan}`;
+                    statusClass = 'active';
+                } else if (inTrial) {
+                    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    statusHTML = `<span class="dot"></span> Free Trial — ${daysLeft} days left`;
+                    statusClass = 'trial';
+                } else {
+                    statusHTML = `<span class="dot"></span> Expired`;
+                    statusClass = 'expired';
+                }
+
+                // Build account card
+                let subInfoHTML = '';
+                if (hasActiveSub) {
+                    subInfoHTML = `
+                        <div class="sub-info">
+                            <div class="sub-info-item">
+                                <div class="label">Plan</div>
+                                <div class="value">${activeSub.plan === 'weekly' ? 'Weekly — €1/wk' : 'Monthly — €3.49/mo'}</div>
+                            </div>
+                            <div class="sub-info-item">
+                                <div class="label">Next billing</div>
+                                <div class="value">${activeSub.current_period_end ? formatDate(activeSub.current_period_end) : '—'}</div>
+                            </div>
+                            <div class="sub-info-item">
+                                <div class="label">Member since</div>
+                                <div class="value">${profile ? formatDate(profile.created_at) : '—'}</div>
+                            </div>
+                        </div>`;
+                } else if (inTrial) {
+                    subInfoHTML = `
+                        <div class="sub-info">
+                            <div class="sub-info-item">
+                                <div class="label">Trial started</div>
+                                <div class="value">${profile ? formatDate(profile.trial_start) : '—'}</div>
+                            </div>
+                            <div class="sub-info-item">
+                                <div class="label">Trial ends</div>
+                                <div class="value">${formatDate(trialEnd)}</div>
+                            </div>
+                        </div>
+                        <a href="/pricing.html" class="upgrade-btn">Upgrade Now</a>`;
+                } else {
+                    subInfoHTML = `
+                        <p style="color:var(--text-muted); margin-bottom:16px;">Your free trial has ended. Subscribe to continue using ConFluent.</p>
+                        <a href="/pricing.html" class="upgrade-btn">Choose a Plan</a>`;
+                }
+
+                // Build transactions table
+                let txHTML;
+                if (transactions.length > 0) {
+                    const rows = transactions.map(tx => `
+                        <tr>
+                            <td>${formatDate(tx.created_at)}</td>
+                            <td>${tx.plan === 'weekly' ? 'Weekly' : 'Monthly'}</td>
+                            <td>${formatAmount(tx.amount, tx.currency)}</td>
+                            <td><span class="tx-status ${tx.status}">${tx.status}</span></td>
+                        </tr>
+                    `).join('');
+
+                    txHTML = `
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    txHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>No transactions yet</p>
+                        </div>`;
+                }
+
+                container.innerHTML = `
+                    <h1>My Account</h1>
+
+                    <div class="account-card">
+                        <div class="account-header">
+                            <div class="account-user">
+                                <img class="account-avatar" src="${user.picture || ''}" alt="" referrerpolicy="no-referrer">
+                                <div>
+                                    <div class="account-name">${user.name || ''}</div>
+                                    <div class="account-email">${user.email}</div>
+                                </div>
+                            </div>
+                            <span class="status-badge ${statusClass}">${statusHTML}</span>
+                        </div>
+                        ${subInfoHTML}
+                    </div>
+
+                    <h2 class="section-title">Payment History</h2>
+                    <div class="transactions-card">
+                        ${txHTML}
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error('Dashboard Error:', err);
+                container.innerHTML = `
+                    <h1>My Account</h1>
+                    <div class="account-card">
+                        <p style="color:var(--danger)">Failed to load account data. Please try again later.</p>
+                    </div>`;
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>
