@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ConFluent</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #070b14;
+            --surface: #0f1729;
+            --surface-2: #162040;
+            --text: #f0f4ff;
+            --text-muted: #7a8baa;
+            --primary: #4f6ef7;
+            --primary-light: #6b85f9;
+            --accent: #10b981;
+            --border: #1c2a4a;
+            --gradient-1: linear-gradient(135deg, #4f6ef7, #8b5cf6);
+            --gradient-2: linear-gradient(135deg, #10b981, #0ea5e9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* BG Glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background:
+                radial-gradient(ellipse at 30% 30%, rgba(79, 110, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            animation: drift 25s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-2%, -1.5%);
+            }
+        }
+
+        /* Stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Container */
+        .onboarding {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            padding: 24px;
+        }
+
+        /* Steps container */
+        .steps-container {
+            position: relative;
+            overflow: hidden;
+            min-height: 480px;
+        }
+
+        .step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            padding: 0 4px;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .step.exit {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* Progress */
+        .progress {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .progress-dot {
+            width: 32px;
+            height: 4px;
+            border-radius: 4px;
+            background: var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--gradient-1);
+            width: 48px;
+        }
+
+        .progress-dot.done {
+            background: var(--accent);
+        }
+
+        /* Illustration */
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 28px;
+            position: relative;
+        }
+
+        .step-icon.gradient-1 {
+            background: linear-gradient(135deg, rgba(79, 110, 247, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(79, 110, 247, 0.2);
+        }
+
+        .step-icon.gradient-2 {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(14, 165, 233, 0.15));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .step-icon.gradient-3 {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.15));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .step-icon.gradient-4 {
+            background: linear-gradient(135deg, rgba(79, 110, 247, 0.15), rgba(16, 185, 129, 0.15));
+            border: 1px solid rgba(79, 110, 247, 0.2);
+        }
+
+        .step-icon::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 24px;
+            background: inherit;
+            filter: blur(20px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        /* Text */
+        .step h1 {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .step h1 .highlight {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 420px;
+            margin: 0 auto 32px;
+        }
+
+        /* Language selector */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .lang-option {
+            padding: 14px 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .lang-option:hover {
+            border-color: rgba(79, 110, 247, 0.4);
+            background: var(--surface-2);
+        }
+
+        .lang-option.selected {
+            border-color: var(--primary);
+            background: rgba(79, 110, 247, 0.1);
+            box-shadow: 0 0 20px rgba(79, 110, 247, 0.1);
+        }
+
+        .lang-option .flag {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .lang-option .name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Feature cards */
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            border-color: rgba(79, 110, 247, 0.3);
+            transform: translateX(4px);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .feature-icon.blue {
+            background: rgba(79, 110, 247, 0.12);
+        }
+
+        .feature-icon.green {
+            background: rgba(16, 185, 129, 0.12);
+        }
+
+        .feature-icon.orange {
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        .feature-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(79, 110, 247, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(79, 110, 247, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            border-color: rgba(79, 110, 247, 0.3);
+        }
+
+        .btn-google {
+            background: #fff;
+            color: #333;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            justify-content: center;
+            padding: 16px 32px;
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-skip {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: color 0.2s;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-skip:hover {
+            color: var(--text);
+        }
+
+        /* Trial badge */
+        .trial-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 14px;
+            margin-bottom: 24px;
+        }
+
+        .trial-info .icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .trial-info .text {
+            font-size: 13px;
+            color: var(--accent);
+            line-height: 1.5;
+        }
+
+        .trial-info .text strong {
+            color: var(--text);
+        }
+
+        /* Confetti animation */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            z-index: 10;
+            animation: confetti-fall 3s ease-in forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .lang-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .step h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Stars background -->
+    <div class="stars" id="stars"></div>
+
+    <div class="onboarding">
+        <!-- Progress -->
+        <div class="progress" id="progress">
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+            <div class="progress-dot"></div>
+            <div class="progress-dot"></div>
+        </div>
+
+        <div class="steps-container">
+
+            <!-- STEP 1: Welcome -->
+            <div class="step active" id="step-1">
+                <div class="step-icon gradient-1">🌍</div>
+                <h1>Welcome to <span class="highlight">ConFluent</span></h1>
+                <p>Translate what you type, in real time, on any website. Break language barriers without leaving your
+                    page.</p>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon blue">⚡</div>
+                        <div>
+                            <div class="feature-title">Real-time Translation</div>
+                            <div class="feature-desc">Translate as you type — no copy-paste needed</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon green">💬</div>
+                        <div>
+                            <div class="feature-title">Conversation Mode</div>
+                            <div class="feature-desc">Read incoming messages in your language</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon orange">🔒</div>
+                        <div>
+                            <div class="feature-title">100% Private</div>
+                            <div class="feature-desc">No data stored, no tracking, no history</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="goToStep(2)">Get Started →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Choose language -->
+            <div class="step" id="step-2">
+                <div class="step-icon gradient-2">🗣️</div>
+                <h1>What language do <span class="highlight">you speak</span>?</h1>
+                <p>Select your native language. ConFluent will translate to this language when reading, and from it when
+                    writing.</p>
+
+                <div class="lang-grid" id="lang-grid">
+                    <div class="lang-option" data-lang="fr" onclick="selectLang(this)">
+                        <div class="flag">🇫🇷</div>
+                        <div class="name">Français</div>
+                    </div>
+                    <div class="lang-option" data-lang="en" onclick="selectLang(this)">
+                        <div class="flag">🇬🇧</div>
+                        <div class="name">English</div>
+                    </div>
+                    <div class="lang-option" data-lang="es" onclick="selectLang(this)">
+                        <div class="flag">🇪🇸</div>
+                        <div class="name">Español</div>
+                    </div>
+                    <div class="lang-option" data-lang="de" onclick="selectLang(this)">
+                        <div class="flag">🇩🇪</div>
+                        <div class="name">Deutsch</div>
+                    </div>
+                    <div class="lang-option" data-lang="pt" onclick="selectLang(this)">
+                        <div class="flag">🇧🇷</div>
+                        <div class="name">Português</div>
+                    </div>
+                    <div class="lang-option" data-lang="it" onclick="selectLang(this)">
+                        <div class="flag">🇮🇹</div>
+                        <div class="name">Italiano</div>
+                    </div>
+                    <div class="lang-option" data-lang="ar" onclick="selectLang(this)">
+                        <div class="flag">🇸🇦</div>
+                        <div class="name">العربية</div>
+                    </div>
+                    <div class="lang-option" data-lang="zh" onclick="selectLang(this)">
+                        <div class="flag">🇨🇳</div>
+                        <div class="name">中文</div>
+                    </div>
+                    <div class="lang-option" data-lang="ja" onclick="selectLang(this)">
+                        <div class="flag">🇯🇵</div>
+                        <div class="name">日本語</div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" id="btn-step2" onclick="goToStep(3)" disabled>Continue →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: How it works -->
+            <div class="step" id="step-3">
+                <div class="step-icon gradient-3">✨</div>
+                <h1>How it <span class="highlight">works</span></h1>
+                <p>ConFluent lives in your browser toolbar. Here's how to use it:</p>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon blue" style="font-weight:700; font-size:16px; color: var(--primary);">1
+                        </div>
+                        <div>
+                            <div class="feature-title">Type in any text field</div>
+                            <div class="feature-desc">Works on any website — messaging apps, social media, emails</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon green" style="font-weight:700; font-size:16px; color: var(--accent);">2
+                        </div>
+                        <div>
+                            <div class="feature-title">Wait or double-click</div>
+                            <div class="feature-desc">Your text is automatically replaced with the translation</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon orange" style="font-weight:700; font-size:16px; color: #f59e0b;">3
+                        </div>
+                        <div>
+                            <div class="feature-title">Send it!</div>
+                            <div class="feature-desc">The translated text is ready to send — no extra steps</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(4)">Almost done →</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Sign in -->
+            <div class="step" id="step-4">
+                <div class="step-icon gradient-4">🚀</div>
+                <h1>You're <span class="highlight">all set</span>!</h1>
+                <p>Sign in with Google to unlock your free trial and sync your settings across devices.</p>
+
+                <div class="trial-info">
+                    <span class="icon">🎁</span>
+                    <span class="text"><strong>14 days free</strong> — full access to all features, no credit card
+                        required.</span>
+                </div>
+
+                <button class="btn btn-google" onclick="signIn()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+                    Continue with Google
+                </button>
+
+                <button class="btn-skip" onclick="skipSignIn()">
+                    Skip for now — I'll sign in later
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Generate random stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 60; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (2 + Math.random() * 3) + 's';
+            starsContainer.appendChild(star);
+        }
+
+        let currentStep = 1;
+        let selectedLang = null;
+
+        function goToStep(n) {
+            const prev = document.getElementById(`step-${currentStep}`);
+            const next = document.getElementById(`step-${n}`);
+            const dots = document.querySelectorAll('.progress-dot');
+
+            // Animate out
+            prev.classList.remove('active');
+            prev.classList.add(n > currentStep ? 'exit' : '');
+            prev.style.transform = n > currentStep ? 'translateX(-60px)' : 'translateX(60px)';
+
+            // Animate in
+            setTimeout(() => {
+                next.style.transform = n > currentStep ? 'translateX(60px)' : 'translateX(-60px)';
+                next.classList.remove('exit');
+                void next.offsetWidth; // force reflow
+                next.classList.add('active');
+            }, 50);
+
+            // Update progress
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'done');
+                if (i < n - 1) dot.classList.add('done');
+                if (i === n - 1) dot.classList.add('active');
+            });
+
+            currentStep = n;
+        }
+
+        function selectLang(el) {
+            document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedLang = el.dataset.lang;
+            document.getElementById('btn-step2').disabled = false;
+
+            // Save immediately
+            chrome.storage.local.set({ myLang: selectedLang });
+        }
+
+        function signIn() {
+            // Save onboarding completed
+            chrome.storage.local.set({ onboardingDone: true }, () => {
+                // Open login page on the website
+                chrome.tabs.create({ url: 'https://www.confluents.xyz/login.html' });
+                // Close this tab
+                window.close();
+            });
+        }
+
+        function skipSignIn() {
+            // Save onboarding completed without login
+            chrome.storage.local.set({ onboardingDone: true }, () => {
+                launchConfetti();
+                setTimeout(() => window.close(), 1500);
+            });
+        }
+
+        function launchConfetti() {
+            const colors = ['#4f6ef7', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+            for (let i = 0; i < 40; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + '%';
+                c.style.top = '-10px';
+                c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                c.style.width = (4 + Math.random() * 6) + 'px';
+                c.style.height = (4 + Math.random() * 6) + 'px';
+                c.style.animationDelay = Math.random() * 0.5 + 's';
+                c.style.animationDuration = (2 + Math.random() * 2) + 's';
+                document.body.appendChild(c);
+            }
+        }
+    </script>
+</body>
+
+</html>

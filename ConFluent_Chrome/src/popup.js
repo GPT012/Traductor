@@ -58,14 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             selectFlag(currentMyLang);
             updateVisibility();
 
-            // Show profile if logged in, redirect if not
+            // Show profile if logged in (no forced redirect)
             if (c.user) {
                 showProfile(c.user);
-            } else {
-                // First install or extension reloaded — go to login
-                chrome.tabs.create({ url: 'https://www.confluents.xyz/login.html' });
-                window.close();
-                return;
             }
         }
     );

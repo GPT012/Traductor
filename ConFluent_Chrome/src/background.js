@@ -153,8 +153,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // === SELF-HEALING: Inject on install/update ===
-chrome.runtime.onInstalled.addListener(async () => {
-    if (DEBUG) console.log('[ConFluent] 🔄 Install/Update — Injecting into open tabs...');
+chrome.runtime.onInstalled.addListener(async (details) => {
+    if (DEBUG) console.log('[ConFluent] 🔄 Install/Update — reason:', details.reason);
+
+    // Open onboarding page on FIRST install only
+    if (details.reason === 'install') {
+        const { onboardingDone } = await chrome.storage.local.get('onboardingDone');
+        if (!onboardingDone) {
+            chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+        }
+    }
+
+    // Inject content scripts into already-open tabs
     const manifest = chrome.runtime.getManifest();
     for (const cs of manifest.content_scripts) {
         const tabs = await chrome.tabs.query({ url: cs.matches });
