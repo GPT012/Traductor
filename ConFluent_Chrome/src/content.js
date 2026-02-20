@@ -206,6 +206,125 @@
         color: #ef4444 !important;
         opacity: 0.6 !important;
     }
+
+    /* === TOOLTIP TRANSLATION === */
+    #tr-tooltip-trigger {
+      all: initial !important;
+      position: absolute !important;
+      width: 28px !important;
+      height: 28px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      z-index: 2147483646 !important;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4), 0 0 0 2px rgba(255,255,255,0.9) !important;
+      animation: tr-fade-in 0.2s ease-out !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+      pointer-events: auto !important;
+    }
+    #tr-tooltip-trigger:hover {
+      transform: scale(1.15) !important;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.6), 0 0 0 2px rgba(255,255,255,1) !important;
+    }
+    #tr-tooltip-trigger:active {
+      transform: scale(0.95) !important;
+    }
+    #tr-tooltip-trigger svg {
+      width: 14px !important;
+      height: 14px !important;
+      color: white !important;
+      pointer-events: none !important;
+    }
+
+    #tr-tooltip-popup {
+      all: initial !important;
+      position: absolute !important;
+      z-index: 2147483646 !important;
+      background: #1e1b2e !important;
+      border: 1px solid rgba(139, 92, 246, 0.3) !important;
+      border-radius: 12px !important;
+      padding: 12px 16px !important;
+      max-width: 360px !important;
+      min-width: 160px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(139,92,246,0.15) !important;
+      animation: tr-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      pointer-events: auto !important;
+    }
+
+    #tr-tooltip-source {
+      display: block !important;
+      font-size: 11px !important;
+      color: #a78bfa !important;
+      margin-bottom: 6px !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.5px !important;
+      text-transform: uppercase !important;
+    }
+
+    #tr-tooltip-text {
+      display: block !important;
+      font-size: 14px !important;
+      color: #f1f5f9 !important;
+      line-height: 1.5 !important;
+      word-break: break-word !important;
+    }
+
+    #tr-tooltip-loading {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      color: #a78bfa !important;
+      font-size: 13px !important;
+    }
+    #tr-tooltip-loading .tr-spinner {
+      width: 14px !important;
+      height: 14px !important;
+      border: 2px solid rgba(167, 139, 250, 0.3) !important;
+      border-top-color: #a78bfa !important;
+      border-radius: 50% !important;
+      animation: tr-spin-subtle 0.6s linear infinite !important;
+    }
+
+    #tr-tooltip-actions {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 6px !important;
+      margin-top: 8px !important;
+      padding-top: 8px !important;
+      border-top: 1px solid rgba(139, 92, 246, 0.15) !important;
+    }
+    .tr-tooltip-btn {
+      all: initial !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      padding: 4px 10px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    .tr-tooltip-btn.tr-copy {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #c4b5fd !important;
+      border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    }
+    .tr-tooltip-btn.tr-copy:hover {
+      background: rgba(139, 92, 246, 0.3) !important;
+      color: #ede9fe !important;
+    }
+    .tr-tooltip-btn.tr-copy.tr-copied {
+      background: rgba(16, 185, 129, 0.2) !important;
+      color: #6ee7b7 !important;
+      border-color: rgba(16, 185, 129, 0.3) !important;
+    }
   `;
 
   // === BADGE ===
@@ -604,9 +723,169 @@
   }
 
 
+  // === TOOLTIP TRANSLATION ===
+  let tooltipTrigger = null;
+  let tooltipPopup = null;
+
+  const TRANSLATE_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>`;
+
+  function removeTooltipTrigger() {
+    if (tooltipTrigger) { tooltipTrigger.remove(); tooltipTrigger = null; }
+  }
+
+  function removeTooltipPopup() {
+    if (tooltipPopup) { tooltipPopup.remove(); tooltipPopup = null; }
+  }
+
+  function removeAllTooltips() {
+    removeTooltipTrigger();
+    removeTooltipPopup();
+  }
+
+  function showTooltipTrigger(x, y, selectedText) {
+    removeAllTooltips();
+
+    const trigger = document.createElement('div');
+    trigger.id = 'tr-tooltip-trigger';
+    trigger.innerHTML = TRANSLATE_ICON_SVG;
+    trigger.style.left = `${x + 6}px`;
+    trigger.style.top = `${y - 36}px`;
+
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showTooltipPopup(x, y, selectedText);
+    });
+
+    document.body.appendChild(trigger);
+    tooltipTrigger = trigger;
+  }
+
+  function showTooltipPopup(x, y, selectedText) {
+    removeTooltipTrigger();
+    removeTooltipPopup();
+
+    const popup = document.createElement('div');
+    popup.id = 'tr-tooltip-popup';
+    popup.innerHTML = `
+      <span id="tr-tooltip-source">Translation</span>
+      <div id="tr-tooltip-loading">
+        <div class="tr-spinner"></div>
+        <span>Translating...</span>
+      </div>
+    `;
+
+    // Position: try above selection, fall back to below
+    const viewW = window.innerWidth;
+    const viewH = window.innerHeight;
+    let left = x;
+    let top = y - 90;
+
+    // Clamp horizontal
+    if (left + 360 > viewW) left = viewW - 375;
+    if (left < 10) left = 10;
+    // If too close to top, show below selection
+    if (top < 10) top = y + 25;
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+
+    document.body.appendChild(popup);
+    tooltipPopup = popup;
+
+    // Translate via background
+    try {
+      chrome.runtime.sendMessage(
+        { action: 'translate', text: selectedText, targetLang: settings.myLang || 'fr' },
+        (res) => {
+          if (!tooltipPopup || !tooltipPopup.isConnected) return;
+          if (chrome.runtime.lastError || !res?.translation) {
+            tooltipPopup.innerHTML = `
+              <span id="tr-tooltip-source">Error</span>
+              <span id="tr-tooltip-text" style="color: #f87171 !important;">Translation failed</span>
+            `;
+            return;
+          }
+          tooltipPopup.innerHTML = `
+            <span id="tr-tooltip-source">Translation</span>
+            <span id="tr-tooltip-text">${res.translation.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+            <div id="tr-tooltip-actions">
+              <button class="tr-tooltip-btn tr-copy" id="tr-tooltip-copy">📋 Copy</button>
+            </div>
+          `;
+          // Readjust position after content loaded
+          const rect = tooltipPopup.getBoundingClientRect();
+          if (rect.right > viewW) {
+            tooltipPopup.style.left = `${viewW - rect.width - 15}px`;
+          }
+          if (rect.bottom > viewH) {
+            tooltipPopup.style.top = `${y - rect.height - 10}px`;
+          }
+          // Copy button handler
+          const copyBtn = document.getElementById('tr-tooltip-copy');
+          if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(res.translation).then(() => {
+                copyBtn.textContent = '✓ Copied';
+                copyBtn.classList.add('tr-copied');
+                setTimeout(() => {
+                  if (copyBtn.isConnected) {
+                    copyBtn.textContent = '📋 Copy';
+                    copyBtn.classList.remove('tr-copied');
+                  }
+                }, 1500);
+              });
+            });
+          }
+        }
+      );
+    } catch {
+      removeTooltipPopup();
+    }
+  }
+
+  // Selection handler — show tooltip trigger on text selection
+  document.addEventListener('mouseup', (e) => {
+    // Skip if clicking on tooltip elements
+    if (e.target.closest('#tr-tooltip-trigger') || e.target.closest('#tr-tooltip-popup')) return;
+
+    // Small delay to let browser set selection
+    setTimeout(() => {
+      const sel = window.getSelection();
+      const text = sel?.toString().trim();
+
+      if (text && text.length >= 2 && text.length < 2000 && isEnabled) {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const x = rect.right + window.scrollX;
+        const y = rect.top + window.scrollY;
+        showTooltipTrigger(x, y, text);
+      } else {
+        removeTooltipTrigger();
+      }
+    }, 10);
+  });
+
+  // Dismiss tooltip on click outside
+  document.addEventListener('mousedown', (e) => {
+    if (e.target.closest('#tr-tooltip-trigger') || e.target.closest('#tr-tooltip-popup')) return;
+    removeAllTooltips();
+  });
+
+  // Dismiss on scroll
+  window.addEventListener('scroll', removeAllTooltips, { passive: true });
+
+  // Dismiss on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') removeAllTooltips();
+  });
+
+
   // === CLEANUP ===
   function destroy() {
     stopConversationMode();
+    removeAllTooltips();
     document.removeEventListener('input', handleInput, true);
     badge?.parentNode?.removeChild(badge);
     window.__confluentRunning = false;
