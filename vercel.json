@@ -1,5 +1,0 @@
-{
-    "buildCommand": "cd ConFluent_Chrome/next-web && npm install && npm run build",
-    "outputDirectory": "ConFluent_Chrome/next-web/.next",
-    "framework": "nextjs"
-}
